@@ -213,9 +213,9 @@ const roster = {
     desc:'적 전체 7 물리, 아군 전원 물공 +1단계',
     use:(ctx,self)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.pAoE(self,7); ctx.allies().forEach(a=>a.pAtk++); }}
   },
-  Tandrion:{ key:'Tandrion', ko:'탄드리온', cost:2, target:'enemy', type:'phys',
-    desc:'적 하나 30 물리, 자신 2턴 취약',
-    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.pHit(self,t,30); self.status.vuln=Math.max(self.status.vuln,2); }}
+  Tandrion:{ key:'Tandrion', ko:'탄드리온', cost:3, target:'enemy', type:'phys',
+    desc:'적 하나 35 물리, 자신 2턴 취약',
+    use:(ctx,self,t)=>{ ctx.spend(self,3); if(!ctx.fizzle(self)){ ctx.pHit(self,t,35); self.status.vuln=Math.max(self.status.vuln,2); }}
   },
   Catnip:{ key:'Catnip', ko:'캣닙', cost:3, target:'modal', type:'support',
     desc:'아군 물공 +5단계(1턴), 후열 1명 교체(선택지 3)',
@@ -339,8 +339,8 @@ const roster = {
     use:(ctx,self)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.mAoE(self,8); self.guard+=12; }}
   },
   Aurel:{ key:'Aurel', ko:'오렐', cost:3, target:'enemy', type:'phys',
-    desc:'적 하나 6 물리×5',
-    use:(ctx,self,t)=>{ ctx.spend(self,3); if(!ctx.fizzle(self)){ for(let i=0;i<5;i++) ctx.pHit(self,t,6); }}
+    desc:'적 하나 3 물리×7',
+    use:(ctx,self,t)=>{ ctx.spend(self,3); if(!ctx.fizzle(self)){ for(let i=0;i<7;i++) ctx.pHit(self,t,3); }}
   },
 };
 
