@@ -183,8 +183,23 @@ const roster = {
     use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ for(let i=0;i<3;i++) ctx.pHit(self,t,4); }}
   },
   Varerian:{ key:'Varerian', ko:'발레리안', cost:2, target:'enemy', type:'phys',
-    desc:'적 하나 12 물리, 준 피해만큼 흡혈, 버프 1개 훔치기',
-    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ const dealt=ctx.pHit(self,t,12); self.hp = Math.min(self.maxHp, self.hp+dealt); ctx.stealBuff(t,self); }}
+    desc:'적 하나 12 물리, 준 피해만큼 흡혈. 대상에게 재생이 있으면 훔쳐온다.',
+    use:(ctx,self,t)=>{ 
+      ctx.spend(self,2); 
+      if(!ctx.fizzle(self)){ 
+        const dealt=ctx.pHit(self,t,12); 
+        self.hp = Math.min(self.maxHp, self.hp+dealt);
+        // --- 재생 훔치기 로직 시작 ---
+        if (t.status && t.status.regenTurns > 0) {
+          self.status.regenTurns = t.status.regenTurns;
+          self.status.regen = 1; // 재생 효과 플래그
+          t.status.regenTurns = 0;
+          t.status.regen = 0;
+          ctx.log(`${self.ko}가 ${unitName(t)}의 재생 효과를 훔쳤다!`);
+        }
+        // --- 재생 훔치기 로직 끝 ---
+      }
+    }
   },
   Hazel:{ key:'Hazel', ko:'헤이즐', cost:1, target:'none', type:'support',
     desc:'아군 전원 HP +5, 방어 +5',
@@ -661,6 +676,14 @@ function endPlayerTurn(){
 
   // Ally debuff ticks
   Engine.allies().forEach(a=>{
+    // --- 아군 개별 재생 효과 처리 (추가된 부분) ---
+    if (a.status && a.status.regenTurns > 0) {
+      // 적과 동일하게 턴당 20 회복하도록 설정합니다. 원한다면 다른 값으로 변경 가능합니다.
+      a.hp = Math.min(a.maxHp, a.hp + 20); 
+      a.status.regenTurns--;
+    }
+    // --- 여기까지 추가 ---
+
     if(a.status.poison5>0){ a.hp=Math.max(0,a.hp-5); if(a.hp<=0){ a.alive=false; a.guard=0; }
       a.status.poison5--; }
     // decrement others
@@ -674,7 +697,7 @@ function endPlayerTurn(){
       e.lycoPoison = e.lycoPoison.filter(x=>x>0); e.hp=Math.max(0,e.hp-total); if(e.hp<=0){ e.alive=false; e.guard=0; Engine.log(`${unitName(e)} 독으로 쓰러짐`);} }
 
     // enemy regen
-    if(e.status.regenTurns>0){ e.hp=Math.min(e.maxHp, e.hp+5); e.status.regenTurns--; }
+    if(e.status.regenTurns>0){ e.hp=Math.min(e.maxHp, e.hp+20); e.status.regenTurns--; }
 
     // decrement enemy status
     if(e.status.vuln>0) e.status.vuln--; if(e.status.weaken>0) e.status.weaken--; if(e.status.physImm>0) e.status.physImm--; if(e.status.magImm>0) e.status.magImm--; if(e.status.stun>0) e.status.stun--;
