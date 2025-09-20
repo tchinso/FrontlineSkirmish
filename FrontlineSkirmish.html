@@ -243,8 +243,8 @@ const roster = {
     use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.pHit(self,t,12); self.guard+=10; }}
   },
   Hanaume:{ key:'Hanaume', ko:'하나우메', cost:1, target:'ally', type:'support',
-    desc:'아군 하나 HP +10, 디버프 해제',
-    use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ t.hp=Math.min(t.maxHp,t.hp+10); t.status.vuln=0; t.status.fatigue=0; t.status.poison5=0; t.status.paral=0; }}
+    desc:'아군 하나 HP +15, 디버프 해제',
+    use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ t.hp=Math.min(t.maxHp,t.hp+15); t.status.vuln=0; t.status.fatigue=0; t.status.poison5=0; t.status.paral=0; }}
   },
   Auseil:{ key:'Auseil', ko:'오제유', cost:2, target:'enemy', type:'magic',
     desc:'자신 HP -3, 적 하나 18 마법',
