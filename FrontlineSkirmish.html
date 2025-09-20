@@ -219,8 +219,8 @@ const roster = {
     use:(ctx,self)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.pAoE(self,5); ctx.allies().forEach(a=>a.pAtk++); }}
   },
   Tandrion:{ key:'Tandrion', ko:'탄드리온', cost:3, target:'enemy', type:'phys',
-    desc:'적 하나 35 물리, 자신 2턴 취약',
-    use:(ctx,self,t)=>{ ctx.spend(self,3); if(!ctx.fizzle(self)){ ctx.pHit(self,t,35); self.status.vuln=Math.max(self.status.vuln,2); }}
+    desc:'적 하나 30 물리, 자신 1턴 취약',
+    use:(ctx,self,t)=>{ ctx.spend(self,3); if(!ctx.fizzle(self)){ ctx.pHit(self,t,35); self.status.vuln=Math.max(self.status.vuln,1); }}
   },
   Catnip:{ key:'Catnip', ko:'캣닙', cost:3, target:'none', type:'support',
     desc:'아군 전원 물공 +3단계(2턴, 팀버프)',
@@ -301,7 +301,7 @@ const roster = {
     }
   },
   Sterk:{ key:'Sterk', ko:'슈테르크', cost:2, target:'enemy', type:'phys',
-    desc:'적 하나 24 물리, 자신 2턴 취약',
+    desc:'적 하나 20 물리, 자신 2턴 취약',
     use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.pHit(self,t,24); self.status.vuln=Math.max(self.status.vuln,2); }}
   },
   Ayesha:{ key:'Ayesha', ko:'아샤', cost:2, target:'none', type:'support',
