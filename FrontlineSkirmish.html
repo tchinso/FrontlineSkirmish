@@ -337,8 +337,8 @@ const roster = {
     use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ ctx.mHit(self,t,10); t.status.vuln=Math.max(t.status.vuln,1); }}
   },
   Ryza:{ key:'Ryza', ko:'라이자', cost:2, target:'enemy', type:'phys',
-    desc:'자신 물공 +2단계, 적 하나 6 물리',
-    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ self.pAtk+=2; ctx.pHit(self,t,6); }}
+    desc:'자신 물공 +1단계, 적 하나 8 물리',
+    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ self.pAtk+=1; ctx.pHit(self,t,8); }}
   },
   Lulua:{ key:'Lulua', ko:'루루아', cost:2, target:'modal', type:'mixed',
     desc:'선택: 적 하나 15 마법 또는 자신 방어 +15',
