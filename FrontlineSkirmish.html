@@ -180,8 +180,8 @@ const roster = {
     use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ ctx.mHit(self,t,7); ctx.dispelBuff(t,1); }}
   },
   Cresson:{ key:'Cresson', ko:'크레송', cost:2, target:'enemy', type:'phys',
-    desc:'적 하나 12 물리 피해, 자신 방어 +10, 다음 적턴 자신 도발',
-    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.pHit(self,t,12); self.guard+=10; ctx.state.tauntId=self.id; ctx.state.tauntUntil=ctx.state.turn; ctx.log(`${self.ko} 다음 적턴 도발`);} }
+    desc:'적 하나 14 물리 피해, 자신 방어 +14, 다음 적턴 자신 도발',
+    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.pHit(self,t,12); self.guard+=14; ctx.state.tauntId=self.id; ctx.state.tauntUntil=ctx.state.turn; ctx.log(`${self.ko} 다음 적턴 도발`);} }
   },
   Angelica:{ key:'Angelica', ko:'안젤리카', cost:1, target:'enemy', type:'phys',
     desc:'적 하나 4 물리 피해 x3',
@@ -239,8 +239,8 @@ const roster = {
     use:(ctx,self)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ ctx.enemies.forEach(e=>{ e.lycoPoison.push(5); }); }}
   },
   Shunran:{ key:'Shunran', ko:'슌란', cost:2, target:'enemy', type:'phys',
-    desc:'적 하나 14 물리, 자신 방어 +14',
-    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.pHit(self,t,14); self.guard+=14; }}
+    desc:'적 하나 12 물리, 자신 방어 +10',
+    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.pHit(self,t,12); self.guard+=14; }}
   },
   Hanaume:{ key:'Hanaume', ko:'하나우메', cost:1, target:'ally', type:'support',
     desc:'아군 하나 HP +10, 디버프 해제',
@@ -255,8 +255,8 @@ const roster = {
     use:(ctx,self)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.pAoE(self,2); ctx.enemies.forEach(e=>{ e.status.vuln=Math.max(e.status.vuln,3); e.status.weaken=Math.max(e.status.weaken,3);} ); }}
   },
   Verbena:{ key:'Verbena', ko:'벨베이느', cost:2, target:'none', type:'support',
-    desc:'아군 마공 +3단계(1턴), 3턴간 공격시 50%로 추가 6 마법',
-    use:(ctx,self)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.teamBuff.magiTemp+=3; ctx.teamBuff.magiTempTurns=1; ctx.teamBuff.verbenaExtraTurns=3; }}
+    desc:'아군 마공 +5단계(1턴), 3턴간 공격시 50%로 추가 6 마법',
+    use:(ctx,self)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.teamBuff.magiTemp+=5; ctx.teamBuff.magiTempTurns=1; ctx.teamBuff.verbenaExtraTurns=3; }}
   },
   Amaryllis:{ key:'Amaryllis', ko:'아마릴리스', cost:2, target:'none', type:'support',
     desc:'3턴간 턴 종료시 아군 전원 HP+5, 방어+2 (해당 턴 공격카드 2장↑면 3배)',
