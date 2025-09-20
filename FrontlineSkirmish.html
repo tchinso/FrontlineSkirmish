@@ -301,8 +301,8 @@ const roster = {
     }
   },
   Sterk:{ key:'Sterk', ko:'슈테르크', cost:2, target:'enemy', type:'phys',
-    desc:'적 하나 15 물리, 자신 2턴 취약',
-    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.pHit(self,t,24); self.status.vuln=Math.max(self.status.vuln,2); }}
+    desc:'적 하나 18 물리, 자신 2턴 취약',
+    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.pHit(self,t,18); self.status.vuln=Math.max(self.status.vuln,2); }}
   },
   Ayesha:{ key:'Ayesha', ko:'아샤', cost:2, target:'none', type:'support',
     desc:'아군 전원 HP +10, 디버프 전부 해제',
