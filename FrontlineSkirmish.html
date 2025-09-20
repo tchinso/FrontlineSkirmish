@@ -1,0 +1,805 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Frontline Skirmish - Prototype</title>
+  <style>
+    :root{
+      --bg:#0b0f14; --panel:#121923; --ink:#e7f1ff; --muted:#a7b3c7; --accent:#5ad1ff;
+      --good:#36d399; --warn:#ffcf5a; --bad:#ff6b6b; --guard:#6aa2ff; --energy:#ffd76b;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(180deg,#081019,#0d1722);color:var(--ink);font-family:system-ui,Segoe UI,Roboto,Apple SD Gothic Neo,Pretendard,sans-serif}
+    header{padding:12px 16px;border-bottom:1px solid #1f2a39;background:#0d1520;display:flex;gap:12px;align-items:center}
+    header h1{font-size:18px;margin:0;font-weight:700;letter-spacing:.4px}
+    header .actions{margin-left:auto;display:flex;gap:8px}
+    button{background:#192434;color:var(--ink);border:1px solid #243248;border-radius:10px;padding:8px 12px;cursor:pointer}
+    button:hover{background:#1f2e41}
+    button:disabled{opacity:.45;cursor:not-allowed}
+
+    .view{display:none;padding:16px}
+    .view.active{display:block}
+
+    .grid-characters{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}
+    .card{background:var(--panel);border:1px solid #1f2a39;border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+    .card img{width:100%;aspect-ratio:1/1;object-fit:cover;background:#0c121a}
+    .card .name{padding:8px 10px;font-weight:700}
+    .card .desc{padding:0 10px 10px;color:var(--muted);font-size:12px;min-height:3.2em}
+    .card .selectRow{display:flex;gap:6px;padding:8px;border-top:1px solid #1e2a3a}
+    .card .pill{flex:1;text-align:center;border:1px solid #2a3a52;border-radius:999px;padding:6px 0;font-size:12px;cursor:pointer;user-select:none}
+    .pill.on{background:#26344a}
+
+    .two-col{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}
+    .panel{background:var(--panel);border:1px solid #1f2a39;border-radius:16px;padding:12px}
+    .row{display:flex;gap:8px;align-items:center}
+    .enemyRow,.allyRow{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+
+    .unit{background:#0e141e;border:1px solid #1a2737;border-radius:12px;padding:8px;display:flex;flex-direction:column;gap:6px;min-height:120px}
+    .unit .uhead{display:flex;gap:6px;align-items:center}
+    .tag{font-size:10px;border:1px solid #2b415f;border-radius:999px;padding:2px 6px;color:var(--muted)}
+    .bar{height:10px;background:#1a2535;border-radius:999px;overflow:hidden;border:1px solid #22324a}
+    .bar > span{display:block;height:100%;background:linear-gradient(90deg,#2ee6a6,#6ae3ff);width:100%}
+    .bar.hp > span{background:linear-gradient(90deg,#43e97b,#38f9d7)}
+    .bar.guard > span{background:linear-gradient(90deg,#7aa2ff,#8ec5ff)}
+
+    .actionList{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .act{border:1px solid #2a3a52;border-radius:12px;padding:10px;background:#111a27}
+    .act h4{margin:0 0 6px 0;font-size:14px}
+    .act .meta{font-size:12px;color:var(--muted);display:flex;justify-content:space-between}
+
+    .energy{font-weight:700;color:var(--energy)}
+    .log{font-family:ui-monospace,Consolas,monospace;background:#0b1320;border:1px solid #1a2840;border-radius:10px;padding:8px;height:150px;overflow:auto;white-space:pre-wrap}
+
+    .bad{color:var(--bad)} .good{color:var(--good)} .warn{color:var(--warn)}
+    .muted{color:var(--muted)}
+
+    .sticky-controls{display:flex;gap:8px;flex-wrap:wrap}
+
+    .tooltip{position:relative}
+    .tooltip .tip{display:none;position:absolute;z-index:3;bottom:100%;left:0;background:#0d1320;border:1px solid #22324a;color:var(--ink);padding:8px;border-radius:10px;width:240px;pointer-events:none}
+    .tooltip:hover .tip{display:block}
+
+    .k{font-size:12px;color:#9fb3cf}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Frontline Skirmish</h1>
+    <div class="actions">
+      <button id="btnRestart">다시 시작</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Selection View -->
+    <section id="viewSelect" class="view active">
+      <div class="panel">
+        <h2 style="margin:0 0 10px 0">파티 선택</h2>
+        <p class="muted">무작위 10명 중 전열 3명, 후열 3명을 고르고 진행을 눌러 전투로 넘어가세요. 캐릭터 이미지는 <span class="k">img/영문이름.png</span> 경로를 사용합니다.</p>
+        <div id="charGrid" class="grid-characters"></div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:12px">
+          <div>전열: <span id="countFront">0</span>/3, 후열: <span id="countBack">0</span>/3</div>
+          <div style="margin-left:auto" class="sticky-controls">
+            <button id="btnShuffle">다시 뽑기</button>
+            <button id="btnProceed" disabled>진행</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Battle View -->
+    <section id="viewBattle" class="view">
+      <div class="two-col">
+        <div class="panel">
+          <div class="row" style="justify-content:space-between;margin-bottom:8px">
+            <div>턴: <span id="turnNum">1</span> · 에너지 <span class="energy" id="energyVal">5</span></div>
+            <div class="sticky-controls">
+              <button id="btnSwap" title="이번 턴 1회 전열↔후열 교체">전열/후열 교체</button>
+              <button id="btnEnd">턴 종료</button>
+            </div>
+          </div>
+
+          <h3 style="margin:6px 0 6px 0">적</h3>
+          <div id="enemies" class="enemyRow"></div>
+
+          <h3 style="margin:12px 0 6px 0">아군</h3>
+          <div class="row" style="gap:16px">
+            <div style="flex:1">
+              <div class="k" style="margin:4px 0 6px 2px">전열</div>
+              <div id="frontLine" class="allyRow" style="grid-template-columns:repeat(3,1fr)"></div>
+            </div>
+            <div style="flex:1">
+              <div class="k" style="margin:4px 0 6px 2px">후열</div>
+              <div id="backLine" class="allyRow" style="grid-template-columns:repeat(3,1fr)"></div>
+            </div>
+          </div>
+
+          <h3 style="margin:12px 0 6px 0">행동</h3>
+          <div id="actions" class="actionList"></div>
+        </div>
+
+        <div class="panel">
+          <h3 style="margin:0 0 6px 0">전투 로그</h3>
+          <div id="log" class="log"></div>
+
+          <h3 style="margin:10px 0 6px 0">설명</h3>
+          <div id="desc" class="muted" style="min-height:120px"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+<script>
+/* =====================
+   Data & Utilities
+===================== */
+const R = (min,max)=>Math.floor(Math.random()*(max-min+1))+min;
+const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+
+function bar(node, cur, max){
+  const pct = clamp(Math.round((cur/max)*100),0,100);
+  node.querySelector('span').style.width = pct+'%';
+}
+
+function el(tag, attrs={}, children=[]) {
+  const n = document.createElement(tag);
+  for (const [k,v] of Object.entries(attrs)){
+    if(k==='class') n.className=v; else if(k==='html') n.innerHTML=v; else n.setAttribute(k,v);
+  }
+  for (const c of children){ if(typeof c==='string') n.appendChild(document.createTextNode(c)); else n.appendChild(c); }
+  return n;
+}
+
+function imgPath(key){ return `img/${key}.png`; }
+
+/* =====================
+   Character Roster
+   - englishKey: used for image path
+   - ko/en names, cost, short description
+   - target: 'none'|'enemy'|'allEnemies'|'ally'|'allAllies'|'self'|'modal'
+   - use(ctx, self, target)
+===================== */
+
+const roster = {
+  Uniko:{ key:'Uniko', ko:'우니코', cost:1, target:'enemy', type:'magic',
+    desc:'적 하나에 7 마법 피해, 자신 방어력 +7',
+    use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ ctx.mHit(self,t,7); self.guard+=7; ctx.log(`우니코 방어 +7`);} }
+  },
+  Sorel:{ key:'Sorel', ko:'소렐', cost:2, target:'none', type:'magic',
+    desc:'모든 적 6 마법 피해, 아군 전원 마법공격 +1단계',
+    use:(ctx,self)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.mAoE(self,6); ctx.allies().forEach(a=>a.mAtk++); ctx.state.tempLogs.push('아군 마공 +1'); }}
+  },
+  AniseHyssop:{ key:'AniseHyssop', ko:'아니스히솝', cost:1, target:'enemy', type:'magic',
+    desc:'적 하나 7 마법 피해, 적 강화 1개 제거',
+    use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ ctx.mHit(self,t,7); ctx.dispelBuff(t,1); }}
+  },
+  Cresson:{ key:'Cresson', ko:'크레송', cost:2, target:'enemy', type:'phys',
+    desc:'적 하나 12 물리 피해, 자신 방어 +10, 다음 적턴 자신 도발',
+    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.pHit(self,t,12); self.guard+=10; ctx.state.tauntId=self.id; ctx.state.tauntUntil=ctx.state.turn; ctx.log(`${self.ko} 다음 적턴 도발`);} }
+  },
+  Angelica:{ key:'Angelica', ko:'안젤리카', cost:1, target:'enemy', type:'phys',
+    desc:'적 하나 4 물리 피해 x3',
+    use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ for(let i=0;i<3;i++) ctx.pHit(self,t,4); }}
+  },
+  Varerian:{ key:'Varerian', ko:'발레리안', cost:2, target:'enemy', type:'phys',
+    desc:'적 하나 12 물리, 준 피해만큼 흡혈, 버프 1개 훔치기',
+    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ const dealt=ctx.pHit(self,t,12); self.hp = Math.min(self.maxHp, self.hp+dealt); ctx.stealBuff(t,self); }}
+  },
+  Hazel:{ key:'Hazel', ko:'헤이즐', cost:1, target:'none', type:'support',
+    desc:'아군 전원 HP +5, 방어 +5',
+    use:(ctx,self)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ ctx.allies().forEach(a=>{ a.hp=Math.min(a.maxHp,a.hp+5); a.guard+=5; }); }}
+  },
+  Bergamot:{ key:'Bergamot', ko:'베르가모트', cost:2, target:'enemy', type:'phys',
+    desc:'적 하나 15 물리(상대 HP≥50%면 +15 추가)',
+    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ let dmg=15; if(t.hp>=t.maxHp*0.5) dmg+=15; ctx.pHit(self,t,dmg); }}
+  },
+  Marjoram:{ key:'Marjoram', ko:'마조람', cost:2, target:'none', type:'phys',
+    desc:'적 전체 7 물리, 아군 전원 물공 +1단계',
+    use:(ctx,self)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.pAoE(self,7); ctx.allies().forEach(a=>a.pAtk++); }}
+  },
+  Tandrion:{ key:'Tandrion', ko:'탄드리온', cost:3, target:'enemy', type:'phys',
+    desc:'적 하나 30 물리, 자신 2턴 취약',
+    use:(ctx,self,t)=>{ ctx.spend(self,3); if(!ctx.fizzle(self)){ ctx.pHit(self,t,30); self.status.vuln=Math.max(self.status.vuln,2); }}
+  },
+  Catnip:{ key:'Catnip', ko:'캣닙', cost:3, target:'modal', type:'support',
+    desc:'아군 물공 +5단계(1턴), 후열 1명 교체(선택지 3)',
+    use:(ctx,self)=>{ ctx.spend(self,3); if(!ctx.fizzle(self)){
+      ctx.teamBuff.physTemp+=5; ctx.teamBuff.physTempTurns=1;
+      // swap: choose back index then options
+      const back = ctx.back.filter(a=>a.alive);
+      if(back.length>0){
+        const idx = prompt(`교체할 후열 위치를 1~${ctx.back.length} 중 선택(숫자)`);
+        const i = (parseInt(idx||'0')-1)|0; if(i>=0 && i<ctx.back.length){
+          const options = ctx.randomRosterNotInParty(3);
+          const pick = prompt(`새 캐릭터 선택:\n1) ${options[0].ko}\n2) ${options[1].ko}\n3) ${options[2].ko}`);
+          const pi = (parseInt(pick||'0')-1)|0;
+          if(pi>=0 && pi<3){ ctx.replaceBack(i, options[pi]); }
+        }
+      }
+    }}
+  },
+  Radiata:{ key:'Radiata', ko:'라지아타', cost:1, target:'none', type:'support',
+    desc:'아군 전원 5턴간 매턴 HP +4',
+    use:(ctx,self)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ ctx.teamBuff.regenTurns=Math.max(ctx.teamBuff.regenTurns,5); ctx.teamBuff.regenAmount=4; }}
+  },
+  Lycoris:{ key:'Lycoris', ko:'리코리스', cost:1, target:'none', type:'magic',
+    desc:'모든 적에게 5턴 독(턴마다 1 고정 피해) · 중첩됨',
+    use:(ctx,self)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ ctx.enemies.forEach(e=>{ e.lycoPoison.push(5); }); }}
+  },
+  Shunran:{ key:'Shunran', ko:'슌란', cost:2, target:'enemy', type:'phys',
+    desc:'적 하나 14 물리, 자신 방어 +14',
+    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.pHit(self,t,14); self.guard+=14; }}
+  },
+  Hanaume:{ key:'Hanaume', ko:'하나우메', cost:1, target:'ally', type:'support',
+    desc:'아군 하나 HP +10, 디버프 해제',
+    use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ t.hp=Math.min(t.maxHp,t.hp+10); t.status={vuln:0,fatigue:0,poison5:0,paral:0}; }}
+  },
+  Auseil:{ key:'Auseil', ko:'오제유', cost:2, target:'enemy', type:'magic',
+    desc:'자신 HP -3, 적 하나 18 마법',
+    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ self.hp=Math.max(1,self.hp-3); ctx.mHit(self,t,18); }}
+  },
+  Phonic:{ key:'Phonic', ko:'포닉', cost:2, target:'none', type:'phys',
+    desc:'모든 적 2 물리, 2턴 취약+공격력감소',
+    use:(ctx,self)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.pAoE(self,2); ctx.enemies.forEach(e=>{ e.status.vuln=Math.max(e.status.vuln,2); e.status.weaken=Math.max(e.status.weaken,2);} ); }}
+  },
+  Verbena:{ key:'Verbena', ko:'벨베이느', cost:2, target:'none', type:'support',
+    desc:'아군 마공 +1단계(1턴), 3턴간 공격시 50%로 추가 6 마법',
+    use:(ctx,self)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.teamBuff.magiTemp+=1; ctx.teamBuff.magiTempTurns=1; ctx.teamBuff.verbenaExtraTurns=3; }}
+  },
+  Amaryllis:{ key:'Amaryllis', ko:'아마릴리스', cost:2, target:'none', type:'support',
+    desc:'3턴간 턴 종료시 아군 전원 HP+3, 방어+5 (해당 턴 공격카드 2장↑면 2배)',
+    use:(ctx,self)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.teamBuff.amaryllisTurns=Math.max(ctx.teamBuff.amaryllisTurns,3); }}
+  },
+  Rorona:{ key:'Rorona', ko:'로로나', cost:2, target:'enemy', type:'magic',
+    desc:'적 하나 7 마법, 아군 전원 HP +7',
+    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.mHit(self,t,7); ctx.allies().forEach(a=>a.hp=Math.min(a.maxHp,a.hp+7)); }}
+  },
+  Marie:{ key:'Marie', ko:'마리', cost:2, target:'none', type:'magic',
+    desc:'모든 적 50 마법, 사용 후 자신 소멸',
+    use:(ctx,self)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.mAoE(self,50); ctx.vanish(self); }}
+  },
+  Totori:{ key:'Totori', ko:'토토리', cost:1, target:'none', type:'magic',
+    desc:'모든 적 14 마법, 처치 있으면 소멸하지 않음',
+    use:(ctx,self)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ const before=ctx.enemies.filter(e=>e.alive).length; ctx.mAoE(self,14); const after=ctx.enemies.filter(e=>e.alive).length; if(after===before){ ctx.vanish(self);} }}
+  },
+  Meruru:{ key:'Meruru', ko:'메루루', cost:2, target:'enemy', type:'phys',
+    desc:'적 하나 12 물리, 처치하면 자신 물공 +2단계',
+    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ const was=t.alive; const dealt=ctx.pHit(self,t,12); if(was && !t.alive){ self.pAtk+=2; ctx.log('메루루 물공 +2단계'); } }}
+  },
+  Mimi:{ key:'Mimi', ko:'미미', cost:1, target:'enemy', type:'phys',
+    desc:'토토리 없으면 3 물리×3, 있으면 6 물리×3',
+    use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ const hasTotori = ctx.partyHas('Totori'); const base = hasTotori?6:3; for(let i=0;i<3;i++) ctx.pHit(self,t,base); }}
+  },
+  Sterk:{ key:'Sterk', ko:'슈테르크', cost:2, target:'enemy', type:'phys',
+    desc:'적 하나 20 피해, 자신 2턴 취약',
+    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.pHit(self,t,20); self.status.vuln=Math.max(self.status.vuln,2); }}
+  },
+  Ayesha:{ key:'Ayesha', ko:'아샤', cost:2, target:'none', type:'support',
+    desc:'아군 전원 HP +10, 디버프 전부 해제',
+    use:(ctx,self)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.allies().forEach(a=>{ a.hp=Math.min(a.maxHp,a.hp+10); a.status={vuln:0,fatigue:0,poison5:0,paral:0}; }); }}
+  },
+  Wilbell:{ key:'Wilbell', ko:'윌벨', cost:3, target:'none', type:'magic',
+    desc:'모든 적 8 마법, 1턴 기절(행동 50% 실패)',
+    use:(ctx,self)=>{ ctx.spend(self,3); if(!ctx.fizzle(self)){ ctx.mAoE(self,8); ctx.enemies.forEach(e=>e.status.stun=1); }}
+  },
+  Escha:{ key:'Escha', ko:'에스카', cost:1, target:'ally', type:'support',
+    desc:'아군 하나 HP +10, 다음 공격 50% 증폭',
+    use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ t.hp=Math.min(t.maxHp,t.hp+10); t.status.nextAmp=1; }}
+  },
+  Logy:{ key:'Logy', ko:'로지', cost:2, target:'enemy', type:'phys',
+    desc:'적 하나 14 피해, 자신의 다음 공격 비용 0',
+    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.pHit(self,t,14); self.status.nextFree=1; }}
+  },
+  Nelke:{ key:'Nelke', ko:'네르케', cost:1, target:'self', type:'support',
+    desc:'자신 방어 +8, 무작위 물약(0코스트) 1개 소환',
+    use:(ctx,self)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ self.guard+=8; const pot = ['마공+1단계','물공+1단계','방어+4','체력+3'][R(0,3)]; ctx.addPotion(pot); }}
+  },
+  Lydie:{ key:'Lydie', ko:'리디', cost:1, target:'enemy', type:'magic',
+    desc:'적 하나 8 마법, 파티에 수르 있으면 대상 강화 전부 제거',
+    use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ ctx.mHit(self,t,8); if(ctx.partyHas('Suelle')) ctx.dispelBuff(t,99); }}
+  },
+  Suelle:{ key:'Suelle', ko:'수르', cost:1, target:'enemy', type:'phys',
+    desc:'적 하나 6 물리×2, 파티에 리디 있으면 6 물리×2 추가',
+    use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ const reps = ctx.partyHas('Lydie')?4:2; for(let i=0;i<reps;i++) ctx.pHit(self,t,6); }}
+  },
+  Sophie:{ key:'Sophie', ko:'소피', cost:1, target:'enemy', type:'magic',
+    desc:'적 하나 10 마법, 1턴 취약',
+    use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ ctx.mHit(self,t,10); t.status.vuln=Math.max(t.status.vuln,1); }}
+  },
+  Ryza:{ key:'Ryza', ko:'라이자', cost:2, target:'enemy', type:'phys',
+    desc:'자신 물공 +2단계, 적 하나 12 물리',
+    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ self.pAtk+=2; ctx.pHit(self,t,12); }}
+  },
+  Lulua:{ key:'Lulua', ko:'루루아', cost:2, target:'modal', type:'mixed',
+    desc:'선택: 적 하나 15 마법 또는 자신 방어 +15',
+    use:(ctx,self)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){
+      const pick = confirm('적 하나에 15 마법을 사용할까? 취소를 누르면 자신 방어 +15');
+      if(pick){ ctx.state.pendingTarget={kind:'enemy',caster:self, fn:(t)=>ctx.mHit(self,t,15)}; ctx.tip('대상을 클릭해줘'); }
+      else{ self.guard+=15; }
+    }}
+  },
+  RoronaAdult:{ key:'RoronaAdult', ko:'어른 로로나', cost:2, target:'none', type:'magic',
+    desc:'적 전체 8 마법, 자신 방어 +12',
+    use:(ctx,self)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.mAoE(self,8); self.guard+=12; }}
+  },
+  Aurel:{ key:'Aurel', ko:'오렐', cost:2, target:'enemy', type:'phys',
+    desc:'적 하나 4 물리×5',
+    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ for(let i=0;i<5;i++) ctx.pHit(self,t,4); }}
+  },
+};
+
+const ROSTER_KEYS = Object.keys(roster);
+
+/* =====================
+   Battle State & Engine
+===================== */
+const state = {
+  view:'select',
+  offered:[],
+  front:[],
+  back:[],
+  allAllies:[],
+  enemies:[],
+  turn:1,
+  energy:5,
+  usedSwap:false,
+  pendingTarget:null,
+  tauntId:null, tauntUntil:0,
+  log:[],
+  tempLogs:[],
+  attackCardsUsedThisTurn:0,
+  teamBuff: {magiTemp:0,magiTempTurns:0,physTemp:0,physTempTurns:0,verbenaExtraTurns:0,regenTurns:0,regenAmount:0,amaryllisTurns:0},
+};
+
+let nextAllyId=1, nextEnemyId=1;
+
+function newAlly(def){
+  const base={ id:nextAllyId++, key:def.key, ko:def.ko, img:def.key, maxHp:20, hp:20, guard:0, pAtk:0, mAtk:0, alive:true,
+    status:{vuln:0,fatigue:0,poison5:0,paral:0, nextAmp:0,nextFree:0},
+    type:def.type, cost:def.cost, desc:def.desc };
+  return base;
+}
+
+function newEnemy(pattern){
+  const e={ id:nextEnemyId++, name:`적 ${nextEnemyId-1}`, maxHp:pattern.hp, hp:pattern.hp, baseDmg:R(pattern.dmin,pattern.dmax),
+    guard:0, alive:true, status:{vuln:0,weaken:0,physImm:0,magImm:0,regen:0,regenTurns:0,stun:0}, lycoPoison:[] };
+  return e;
+}
+
+function enemiesByPattern(){
+  const patterns=[
+    {count:1, hp:R(200,250), dmin:16,dmax:19},
+    {count:2, hp:R(130,150), dmin:14,dmax:17},
+    {count:3, hp:R(90,100), dmin:12,dmax:15},
+    {count:4, hp:R(70,80),  dmin:10,dmax:13},
+    {count:5, hp:R(50,60),   dmin:8, dmax:11},
+  ];
+  const pick=patterns[R(0,patterns.length-1)];
+  const arr=[]; for(let i=0;i<pick.count;i++) arr.push(newEnemy(pick));
+  return arr;
+}
+
+/* =====================
+   Engine helpers
+===================== */
+const Engine={
+  get state(){return state;},
+  get enemies(){return state.enemies;},
+  allies(){ return state.allAllies.filter(a=>a.alive); },
+  front(){ return state.front; },
+  back(){ return state.back; },
+  log(msg){ state.log.push(msg); renderLog(); },
+  tip(msg){ document.querySelector('#desc').textContent=msg; },
+  spend(self, baseCost){
+    let cost = baseCost;
+    if(self.status.nextFree){ cost=0; self.status.nextFree=0; }
+    if(state.energy<cost){ this.log('에너지가 부족해…'); throw new Error('no energy'); }
+    state.energy-=cost; updateEnergy();
+  },
+  fizzle(self){
+    // paralysis: 30% to fizzle
+    if(self.status.paral>0){ if(Math.random()<0.3){ this.log(`${self.ko} 마비로 행동 실패`); return true; } }
+    return false;
+  },
+  damageCalc(attacker, target, base, kind){
+    let dmg = base;
+    const atkStage = kind==='phys' ? (attacker.pAtk + state.teamBuff.physTemp) : (attacker.mAtk + state.teamBuff.magiTemp);
+    dmg += 2*Math.max(0, atkStage);
+    if(attacker.status.fatigue>0) dmg = Math.floor(dmg*0.5);
+    if(kind==='phys' && target.status.physImm>0) dmg=0;
+    if(kind==='magic' && target.status.magImm>0) dmg=0;
+    if(target.status.vuln>0) dmg = Math.floor(dmg*2);
+    // Escha amp
+    if(attacker.status.nextAmp){ dmg = Math.floor(dmg*1.5); attacker.status.nextAmp=0; }
+    return Math.max(0, dmg);
+  },
+  applyDamage(target, dmg){
+    let rem = dmg;
+    const beforeHp = target.hp;
+    if(target.guard>0){ const used = Math.min(target.guard, rem); target.guard-=used; rem-=used; }
+    if(rem>0){ target.hp = Math.max(0, target.hp - rem); }
+    if(target.hp<=0){ target.alive=false; target.guard=0; }
+    return Math.max(0, beforeHp - target.hp);
+  },
+  pHit(attacker, target, base){
+    if(!target.alive) return 0;
+    let dmg = this.damageCalc(attacker,target,base,'phys');
+    // Verbena chain: extra 6 magic, 50% chance (3 turns team buff)
+    if(state.teamBuff.verbenaExtraTurns>0 && Math.random()<0.5){ this.mHit(attacker,target,6); this.log('벨베이느 추가타 6 마법'); }
+    const dealtToHp = this.applyDamage(target,dmg);
+    this.log(`${attacker.ko} → ${unitName(target)} ${dmg} 물리`);
+    state.attackCardsUsedThisTurn++;
+    refresh();
+    return dealtToHp;
+  },
+  mHit(attacker, target, base){
+    if(!target.alive) return 0;
+    let dmg = this.damageCalc(attacker,target,base,'magic');
+    if(state.teamBuff.verbenaExtraTurns>0 && Math.random()<0.5){ this.mHit(attacker,target,6); this.log('벨베이느 추가타 6 마법'); }
+    const dealtToHp = this.applyDamage(target,dmg);
+    this.log(`${attacker.ko} → ${unitName(target)} ${dmg} 마법`);
+    state.attackCardsUsedThisTurn++;
+    refresh();
+    return dealtToHp;
+  },
+  mAoE(attacker, base){ this.enemies.forEach(e=>{ if(e.alive) this.mHit(attacker,e,base); }); },
+  pAoE(attacker, base){ this.enemies.forEach(e=>{ if(e.alive) this.pHit(attacker,e,base); }); },
+  dispelBuff(target, n){
+    let removed=0;
+    const order=['physImm','magImm','weaken','regen'];
+    for(const k of order){ if(target.status[k]>0){ target.status[k]=0; removed++; if(removed>=n) break; } }
+    if(removed>0) this.log(`${unitName(target)} 강화 ${removed}개 제거`);
+  },
+  stealBuff(from, to){
+    const list=['physImm','magImm','weaken','regen'];
+    for(const k of list){ if(from.status[k]>0){ from.status[k]=0; to.status[k]= (k==='regen'?2:1); this.log(`${to.ko} ${k} 훔침`); return; } }
+  },
+  vanish(self){ self.alive=false; self.hp=0; self.guard=0; this.log(`${self.ko} 소멸`); refresh(); },
+  addPotion(kind){ state.potions = state.potions||[]; state.potions.push(kind); renderActions(); this.log(`물약 생성: ${kind}`); },
+  usePotion(idx, target){ const kind=state.potions[idx]; state.potions.splice(idx,1);
+    if(kind==='마공+1단계') target.mAtk++;
+    if(kind==='물공+1단계') target.pAtk++;
+    if(kind==='방어+4') target.guard+=4;
+    if(kind==='체력+3') target.hp=Math.min(target.maxHp,target.hp+3);
+    renderActions(); refresh(); },
+  partyHas(key){ return state.allAllies.some(a=>a.key===key && a.alive); },
+  randomRosterNotInParty(n){
+    const set = new Set(state.allAllies.map(a=>a.key));
+    const pool = ROSTER_KEYS.filter(k=>!set.has(k));
+    const picks=[]; while(picks.length<n && pool.length>0){ const i=R(0,pool.length-1); picks.push(roster[pool.splice(i,1)[0]]); }
+    return picks;
+  },
+  replaceBack(index, def){ const newA = newAlly(def); state.back[index]=newA; state.allAllies.push(newA); this.log(`후열 교체: ${def.ko}`); refresh(); },
+};
+
+function unitName(u){ return u.ko?u.ko:u.name; }
+
+/* =====================
+   Rendering
+===================== */
+const $select = document.querySelector('#viewSelect');
+const $battle = document.querySelector('#viewBattle');
+const $charGrid = document.querySelector('#charGrid');
+const $countFront = document.querySelector('#countFront');
+const $countBack = document.querySelector('#countBack');
+const $btnProceed = document.querySelector('#btnProceed');
+const $btnShuffle = document.querySelector('#btnShuffle');
+const $btnRestart = document.querySelector('#btnRestart');
+const $btnSwap = document.querySelector('#btnSwap');
+const $btnEnd = document.querySelector('#btnEnd');
+const $enemies = document.querySelector('#enemies');
+const $front = document.querySelector('#frontLine');
+const $back = document.querySelector('#backLine');
+const $actions = document.querySelector('#actions');
+const $energy = document.querySelector('#energyVal');
+const $turn = document.querySelector('#turnNum');
+const $log = document.querySelector('#log');
+
+function renderSelect(){
+  $charGrid.innerHTML='';
+  state.offered.forEach((def,i)=>{
+    const card = el('div',{class:'card tooltip'});
+    card.appendChild(el('img',{src:imgPath(def.key),alt:def.ko,onerror:"this.src='';this.style.background='#101a26'"}));
+    card.appendChild(el('div',{class:'name'},[`${def.ko} / ${def.key}`]));
+    card.appendChild(el('div',{class:'desc'},[def.desc]));
+    const row = el('div',{class:'selectRow'});
+    const p1 = el('div',{class:'pill', 'data-role':'front'},['전열']);
+    const p2 = el('div',{class:'pill', 'data-role':'back'},['후열']);
+    function updatePills(){
+      p1.classList.toggle('on', state.frontSel.has(i));
+      p2.classList.toggle('on', state.backSel.has(i));
+    }
+    p1.onclick=()=>{ toggleSelect('front',i); updatePills(); };
+    p2.onclick=()=>{ toggleSelect('back',i); updatePills(); };
+    row.appendChild(p1); row.appendChild(p2); card.appendChild(row);
+    const tip = el('div',{class:'tip'},[def.desc]); card.appendChild(tip);
+    $charGrid.appendChild(card);
+  });
+  updateSelectCounts();
+}
+
+function toggleSelect(kind, idx){
+  const set = (kind==='front')?state.frontSel:state.backSel;
+  const other = (kind==='front')?state.backSel:state.frontSel;
+  if(set.has(idx)){ set.delete(idx); }
+  else{
+    if(set.size>=3) return; // limit
+    if(other.has(idx)) other.delete(idx); // cannot be in both
+    set.add(idx);
+  }
+  updateSelectCounts();
+  renderSelect();
+}
+
+function updateSelectCounts(){
+  $countFront.textContent=state.frontSel.size; $countBack.textContent=state.backSel.size;
+  $btnProceed.disabled = !(state.frontSel.size===3 && state.backSel.size===3);
+}
+
+function renderEnemies(){
+  $enemies.innerHTML='';
+  state.enemies.forEach((e,idx)=>{
+    const u = el('div',{class:'unit'});
+    const head = el('div',{class:'uhead'},[ el('div',{class:'tag'},[`적 ${idx+1}`]), el('div',{class:'muted'},[`ATK ${e.baseDmg}`]) ]);
+    u.appendChild(head);
+    const hpBar = el('div',{class:'bar hp'},[el('span')]); bar(hpBar,e.hp,e.maxHp); u.appendChild(hpBar);
+    const gdBar = el('div',{class:'bar guard'},[el('span')]); bar(gdBar,e.guard, Math.max(1,e.maxHp/2)); u.appendChild(gdBar);
+    const st = [];
+    if(e.status.vuln>0) st.push('취약');
+    if(e.status.weaken>0) st.push('약화');
+    if(e.status.physImm>0) st.push('물리무효');
+    if(e.status.magImm>0) st.push('마법무효');
+    if(e.status.stun>0) st.push('기절');
+    if(e.lycoPoison.length>0) st.push(`독×${e.lycoPoison.length}`);
+    if(st.length) u.appendChild(el('div',{class:'k'},[st.join(' · ')]));
+
+    u.onclick=()=>{
+      if(state.pendingTarget && state.pendingTarget.kind==='enemy'){
+        const {caster, fn}=state.pendingTarget; state.pendingTarget=null; fn(e); refresh();
+      }
+    };
+    $enemies.appendChild(u);
+  });
+}
+
+function renderAllies(){
+  function unitBox(a){
+    const u = el('div',{class:'unit'});
+    const head = el('div',{class:'uhead'},[ el('img',{src:imgPath(a.key),alt:a.ko,style:'width:22px;height:22px;border-radius:6px;object-fit:cover'}), el('div',{class:'tag'},[a.ko]) ]);
+    u.appendChild(head);
+    const hpBar = el('div',{class:'bar hp'},[el('span')]); bar(hpBar,a.hp,a.maxHp); u.appendChild(hpBar);
+    const gdBar = el('div',{class:'bar guard'},[el('span')]); bar(gdBar,a.guard, 40); u.appendChild(gdBar);
+    const st=[];
+    if(a.status.vuln>0) st.push('취약');
+    if(a.status.fatigue>0) st.push('지침');
+    if(a.status.poison5>0) st.push('독');
+    if(a.status.paral>0) st.push('마비');
+    if(a.status.nextAmp>0) st.push('다음공격+50%');
+    if(a.status.nextFree>0) st.push('다음비용0');
+    if(st.length) u.appendChild(el('div',{class:'k'},[st.join(' · ')]));
+    return u;
+  }
+  $front.innerHTML='';
+  state.front.forEach((a,i)=>{ const u=unitBox(a); u.onclick=()=>{
+    if(state.pendingTarget && state.pendingTarget.kind==='ally'){
+      const {caster, fn}=state.pendingTarget; state.pendingTarget=null; fn(a); refresh();
+    }
+  }; $front.appendChild(u); });
+
+  $back.innerHTML='';
+  state.back.forEach((a,i)=>{ const u=unitBox(a); u.onclick=()=>{
+    if(state.pendingTarget && state.pendingTarget.kind==='ally'){
+      const {caster, fn}=state.pendingTarget; state.pendingTarget=null; fn(a); refresh();
+    }
+  }; $back.appendChild(u); });
+}
+
+function renderActions(){
+  $actions.innerHTML='';
+  const actors = state.front.filter(a=>a.alive);
+  actors.forEach(a=>{
+    const def = roster[a.key];
+    const card = el('div',{class:'act tooltip'});
+    card.appendChild(el('h4',{},[`${a.ko} · ${def.key}`]));
+    const meta = el('div',{class:'meta'},[ el('span',{},[`코스트 ${a.status.nextFree?0:def.cost}`]), el('span',{},[def.type]) ]);
+    card.appendChild(meta);
+    card.appendChild(el('div',{class:'k'},[def.desc]));
+    card.onclick=()=>{
+      const ability = roster[a.key];
+      try{
+        if(ability.target==='enemy'){
+          state.pendingTarget={kind:'enemy', caster:a, fn:(t)=>ability.use(Engine,a,t)}; Engine.tip('공격 대상을 클릭해줘');
+        }else if(ability.target==='ally'){
+          state.pendingTarget={kind:'ally', caster:a, fn:(al)=>ability.use(Engine,a,al)}; Engine.tip('대상 아군을 클릭해줘');
+        }else if(ability.target==='self'){
+          ability.use(Engine,a,a); refresh();
+        }else if(ability.target==='none'){
+          ability.use(Engine,a); refresh();
+        }else if(ability.target==='modal'){
+          ability.use(Engine,a); refresh();
+        }
+      }catch(e){/* no energy */}
+    };
+    $actions.appendChild(card);
+  });
+
+  // Potions (0 cost temporary actions)
+  if(state.potions && state.potions.length){
+    state.potions.forEach((p,idx)=>{
+      const card = el('div',{class:'act'});
+      card.appendChild(el('h4',{},[`물약: ${p}`]));
+      card.appendChild(el('div',{class:'k'},['대상 아군을 클릭해서 사용']));
+      card.onclick=()=>{ state.pendingTarget={kind:'ally', caster:null, fn:(al)=>{ Engine.usePotion(idx,al); }}; Engine.tip('물약 사용할 아군 선택'); };
+      $actions.appendChild(card);
+    });
+  }
+}
+
+function updateEnergy(){ $energy.textContent=state.energy; }
+function renderLog(){ $log.textContent = state.log.slice(-200).join('\n'); $log.scrollTop=$log.scrollHeight; }
+function refresh(){ renderEnemies(); renderAllies(); updateEnergy(); renderActions(); $turn.textContent=state.turn; }
+
+/* =====================
+   Turn & Enemy AI
+===================== */
+function endPlayerTurn(){
+  // end-of-turn buffs
+  // Amaryllis: at end of turn heal & guard
+  if(state.teamBuff.amaryllisTurns>0){
+    const atkUses = state.attackCardsUsedThisTurn;
+    const mult = (atkUses>=2)?2:1;
+    Engine.allies().forEach(a=>{ a.hp=Math.min(a.maxHp,a.hp+3*mult); a.guard+=5*mult; });
+  }
+
+  // Decrement temp team buffs
+  if(state.teamBuff.magiTempTurns>0) state.teamBuff.magiTempTurns--; else state.teamBuff.magiTemp=0;
+  if(state.teamBuff.physTempTurns>0) state.teamBuff.physTempTurns--; else state.teamBuff.physTemp=0;
+  if(state.teamBuff.verbenaExtraTurns>0) state.teamBuff.verbenaExtraTurns--;
+  if(state.teamBuff.regenTurns>0){ Engine.allies().forEach(a=> a.hp=Math.min(a.maxHp,a.hp+state.teamBuff.regenAmount)); state.teamBuff.regenTurns--; }
+  if(state.teamBuff.amaryllisTurns>0) state.teamBuff.amaryllisTurns--;
+
+  // Ally debuff ticks
+  Engine.allies().forEach(a=>{
+    if(a.status.poison5>0){ a.hp=Math.max(0,a.hp-5); if(a.hp<=0){ a.alive=false; a.guard=0; }
+      a.status.poison5--; }
+    // decrement others
+    if(a.status.vuln>0) a.status.vuln--; if(a.status.fatigue>0) a.status.fatigue--; if(a.status.paral>0) a.status.paral--;
+  });
+
+  // Enemy poison from Lycoris stacks (each stack ticks 1 and decrements its own duration)
+  state.enemies.forEach(e=>{
+    if(!e.alive) return;
+    if(e.lycoPoison.length){ let total=0; for(let i=0;i<e.lycoPoison.length;i++){ total++; e.lycoPoison[i]--; }
+      e.lycoPoison = e.lycoPoison.filter(x=>x>0); e.hp=Math.max(0,e.hp-total); if(e.hp<=0){ e.alive=false; e.guard=0; Engine.log(`${unitName(e)} 독으로 쓰러짐`);} }
+
+    // enemy regen
+    if(e.status.regenTurns>0){ e.hp=Math.min(e.maxHp, e.hp+5); e.status.regenTurns--; }
+
+    // decrement enemy status
+    if(e.status.vuln>0) e.status.vuln--; if(e.status.weaken>0) e.status.weaken--; if(e.status.physImm>0) e.status.physImm--; if(e.status.magImm>0) e.status.magImm--; if(e.status.stun>0) e.status.stun--;
+  });
+
+  // Enemy turn
+  enemyTurn();
+}
+
+function enemyTurn(){
+  // enemies act equal to alive count
+  const actors = state.enemies.filter(e=>e.alive);
+  for(const e of actors){
+    // Stun: 50% fail if stunned
+    if(e.status.stun>0 && Math.random()<0.5){ Engine.log(`${unitName(e)} 기절로 행동 실패`); continue; }
+
+    const roll = Math.random();
+    if(roll<0.6){ enemyAttack(e); }
+    else if(roll<0.8){ enemyDebuff(e); }
+    else { enemyBuff(e); }
+  }
+
+  // After enemy turn: replenish energy and next round
+  state.turn++;
+  state.energy += 3;
+  state.usedSwap=false;
+  state.attackCardsUsedThisTurn=0;
+
+  // Clear taunt if expired
+  if(state.tauntUntil && state.turn>state.tauntUntil){ state.tauntId=null; state.tauntUntil=0; }
+
+  checkEnd();
+  refresh();
+}
+
+function enemyAttack(e){
+  const aliveAllies = Engine.allies();
+  if(aliveAllies.length===0) return;
+  // pick target: taunt priority, else random alive ally prioritizing front then back
+  const aliveFront = state.front.filter(a=>a.alive);
+  let target=null;
+  if(state.tauntId){ const t=state.allAllies.find(a=>a.id===state.tauntId && a.alive); if(t) target=t; }
+  if(!target){ target = (aliveFront.length? aliveFront : state.back.filter(a=>a.alive))[R(0,(aliveFront.length? aliveFront : state.back.filter(a=>a.alive)).length-1)]; }
+  if(!target) return;
+  let dmg = e.baseDmg;
+  if(e.status.weaken>0) dmg=Math.floor(dmg*0.8);
+  // player's vuln on ally doubles damage
+  if(target.status.vuln>0) dmg*=2;
+  const takenFromHp = Engine.applyDamage(target,dmg);
+  Engine.log(`${unitName(e)} → ${target.ko} ${dmg} 피해`);
+}
+
+function enemyDebuff(e){
+  const pool = Engine.allies(); if(pool.length===0) return; const t = pool[R(0,pool.length-1)];
+  const kind = ['vuln','fatigue','poison5','paral'][R(0,3)];
+  if(kind==='vuln') t.status.vuln=Math.max(t.status.vuln,2);
+  if(kind==='fatigue') t.status.fatigue=Math.max(t.status.fatigue,2);
+  if(kind==='poison5') t.status.poison5=Math.max(t.status.poison5,3);
+  if(kind==='paral') t.status.paral=Math.max(t.status.paral,2);
+  Engine.log(`${unitName(e)} → ${t.ko} ${
+    kind==='vuln'?'취약':kind==='fatigue'?'지침':kind==='poison5'?'독':'마비'} 부여`);
+}
+
+function enemyBuff(e){
+  const kind = ['physImm','magImm','defUp','dmgUp','regen'][R(0,4)];
+  if(kind==='physImm') e.status.physImm=2;
+  if(kind==='magImm') e.status.magImm=2;
+  if(kind==='defUp') e.guard+=10;
+  if(kind==='dmgUp') e.baseDmg=Math.floor(e.baseDmg*1.25);
+  if(kind==='regen'){ e.status.regenTurns=3; e.status.regen=1; }
+  Engine.log(`${unitName(e)} 버프: ${kind}`);
+}
+
+function checkEnd(){
+  const allEnemiesDead = state.enemies.every(e=>!e.alive);
+  const allAlliesDead = state.allAllies.every(a=>!a.alive);
+  if(allEnemiesDead){ Engine.log('승리! 모든 적을 처치했어'); }
+  if(allAlliesDead){ Engine.log('패배… 아군 전원이 쓰러졌어'); }
+}
+
+/* =====================
+   Swap System
+===================== */
+function doSwap(){
+  if(state.usedSwap){ Engine.log('이번 턴 교체는 이미 했어'); return; }
+  const fi = prompt('전열에서 교체할 위치 (1~3)');
+  const bi = prompt('후열에서 교체할 위치 (1~3)');
+  const f = (parseInt(fi||'0')-1)|0, b=(parseInt(bi||'0')-1)|0;
+  if(f<0||f>=3||b<0||b>=3){ Engine.log('잘못된 위치'); return; }
+  const fa=state.front[f], ba=state.back[b];
+  // allow dead frontline to be swapped
+  state.front[f]=ba; state.back[b]=fa; state.usedSwap=true; Engine.log('전열/후열 교체 완료'); refresh();
+}
+
+/* =====================
+   Setup & Controls
+===================== */
+function offerTen(){
+  const keys=[...ROSTER_KEYS]; const picks=[]; for(let i=0;i<10;i++){ const idx=R(0,keys.length-1); picks.push(roster[keys.splice(idx,1)[0]]); }
+  state.offered=picks; state.frontSel=new Set(); state.backSel=new Set(); renderSelect();
+}
+
+function beginBattle(){
+  state.front = [...state.frontSel].map(i=> newAlly(state.offered[i]));
+  state.back  = [...state.backSel].map(i=> newAlly(state.offered[i]));
+  state.allAllies = [...state.front, ...state.back];
+  state.enemies = enemiesByPattern();
+  state.turn=1; state.energy=5; state.usedSwap=false; state.log=[]; state.potions=[]; state.teamBuff={magiTemp:0,magiTempTurns:0,physTemp:0,physTempTurns:0,verbenaExtraTurns:0,regenTurns:0,regenAmount:0,amaryllisTurns:0};
+
+  // UI
+  document.querySelector('#viewSelect').classList.remove('active');
+  document.querySelector('#viewBattle').classList.add('active');
+  refresh();
+  Engine.log('전투 시작');
+}
+
+$btnShuffle.onclick=offerTen;
+$btnProceed.onclick=beginBattle;
+$btnRestart.onclick=()=>{ location.reload(); };
+$btnSwap.onclick=doSwap;
+$btnEnd.onclick=endPlayerTurn;
+
+function init(){ offerTen(); }
+init();
+
+</script>
+</body>
+</html>
