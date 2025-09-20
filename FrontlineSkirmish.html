@@ -213,9 +213,9 @@ const roster = {
     desc:'적 전체 7 물리, 아군 전원 물공 +1단계',
     use:(ctx,self)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.pAoE(self,7); ctx.allies().forEach(a=>a.pAtk++); }}
   },
-  Tandrion:{ key:'Tandrion', ko:'탄드리온', cost:3, target:'enemy', type:'phys',
+  Tandrion:{ key:'Tandrion', ko:'탄드리온', cost:2, target:'enemy', type:'phys',
     desc:'적 하나 30 물리, 자신 2턴 취약',
-    use:(ctx,self,t)=>{ ctx.spend(self,3); if(!ctx.fizzle(self)){ ctx.pHit(self,t,30); self.status.vuln=Math.max(self.status.vuln,2); }}
+    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.pHit(self,t,30); self.status.vuln=Math.max(self.status.vuln,2); }}
   },
   Catnip:{ key:'Catnip', ko:'캣닙', cost:3, target:'modal', type:'support',
     desc:'아군 물공 +5단계(1턴), 후열 1명 교체(선택지 3)',
@@ -259,8 +259,8 @@ const roster = {
     use:(ctx,self)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.pAoE(self,2); ctx.enemies.forEach(e=>{ e.status.vuln=Math.max(e.status.vuln,3); e.status.weaken=Math.max(e.status.weaken,3);} ); }}
   },
   Verbena:{ key:'Verbena', ko:'벨베이느', cost:2, target:'none', type:'support',
-    desc:'아군 마공 +5단계(1턴), 3턴간 공격시 50%로 추가 6 마법',
-    use:(ctx,self)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.teamBuff.magiTemp+=5; ctx.teamBuff.magiTempTurns=1; ctx.teamBuff.verbenaExtraTurns=3; }}
+    desc:'아군 마공 +3단계(1턴), 3턴간 공격시 50%로 추가 6 마법',
+    use:(ctx,self)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.teamBuff.magiTemp+=3; ctx.teamBuff.magiTempTurns=1; ctx.teamBuff.verbenaExtraTurns=3; }}
   },
   Amaryllis:{ key:'Amaryllis', ko:'아마릴리스', cost:2, target:'none', type:'support',
     desc:'3턴간 턴 종료시 아군 전원 HP+5, 방어+2 (해당 턴 공격카드 2장↑면 3배)',
