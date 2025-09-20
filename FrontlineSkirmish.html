@@ -759,7 +759,7 @@ function enemyTurn(){
   });
 
   // Clear taunt if expired
-  if(state.tauntUntil && state.turn>state.tauntUntil){ state.tauntId=null; state.tauntUntil=0; }
+  if(state.tauntUntil && state.turn>=state.tauntUntil){ state.tauntId=null; state.tauntUntil=0; }
 
   checkEnd();
   refresh();
