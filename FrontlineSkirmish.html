@@ -240,7 +240,7 @@ const roster = {
   },
   Shunran:{ key:'Shunran', ko:'슌란', cost:2, target:'enemy', type:'phys',
     desc:'적 하나 12 물리, 자신 방어 +10',
-    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.pHit(self,t,12); self.guard+=14; }}
+    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.pHit(self,t,12); self.guard+=10; }}
   },
   Hanaume:{ key:'Hanaume', ko:'하나우메', cost:1, target:'ally', type:'support',
     desc:'아군 하나 HP +10, 디버프 해제',
