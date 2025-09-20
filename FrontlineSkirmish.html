@@ -303,7 +303,7 @@ const roster = {
     use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ t.hp=Math.min(t.maxHp,t.hp+10); t.status.nextAmp=1; }}
   },
   Logy:{ key:'Logy', ko:'로지', cost:2, target:'enemy', type:'phys',
-    desc:'적 하나 14 피해, 자신의 다음 턴 첫 공격 비용 0',
+    desc:'적 하나 14 물리 피해, 자신의 다음 턴 첫 공격 비용 0',
     use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.pHit(self,t,14); self.status.nextTurnFree=1; }}
   },
   Nelke:{ key:'Nelke', ko:'네르케', cost:1, target:'self', type:'support',
