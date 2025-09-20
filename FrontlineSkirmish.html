@@ -211,7 +211,7 @@ const roster = {
     use:(ctx,self)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ ctx.allies().forEach(a=>{ a.hp=Math.min(a.maxHp,a.hp+7); a.guard+=3; }); }}
   },
   Bergamot:{ key:'Bergamot', ko:'베르가모트', cost:2, target:'enemy', type:'phys',
-    desc:'적 하나 10 물리(상대 HP≥50%면 +20 추가 물리리)',
+    desc:'적 하나 10 물리(상대 HP≥50%면 +20 추가 물리)',
     use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ let dmg=10; if(t.hp>=t.maxHp*0.5) dmg+=20; ctx.pHit(self,t,dmg); }}
   },
   Marjoram:{ key:'Marjoram', ko:'마조람', cost:2, target:'none', type:'phys',
