@@ -255,8 +255,8 @@ const roster = {
     use:(ctx,self)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.pAoE(self,2); ctx.enemies.forEach(e=>{ e.status.vuln=Math.max(e.status.vuln,3); e.status.weaken=Math.max(e.status.weaken,3);} ); }}
   },
   Verbena:{ key:'Verbena', ko:'벨베이느', cost:2, target:'none', type:'support',
-    desc:'아군 마공 +3단계(1턴), 3턴간 공격시 50%로 추가 6 마법',
-    use:(ctx,self)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.teamBuff.magiTemp+=3; ctx.teamBuff.magiTempTurns=1; ctx.teamBuff.verbenaExtraTurns=3; }}
+    desc:'아군 마공 +7단계(1턴), 3턴간 마법 공격시 50%로 추가 10 마법',
+    use:(ctx,self)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.teamBuff.magiTemp+=7; ctx.teamBuff.magiTempTurns=1; ctx.teamBuff.verbenaExtraTurns=3; }}
   },
   Amaryllis:{ key:'Amaryllis', ko:'아마릴리스', cost:2, target:'none', type:'support',
     desc:'3턴간 턴 종료시 아군 전원 HP+5, 방어+2 (해당 턴 공격카드 2장↑면 3배)',
@@ -455,8 +455,6 @@ const Engine={
   pHit(attacker, target, base){
     if(!target.alive) return 0;
     let dmg = this.damageCalc(attacker,target,base,'phys');
-    // Verbena chain: extra 6 magic, 50% chance (3 turns team buff)
-    if(state.teamBuff.verbenaExtraTurns>0 && Math.random()<0.5){ this.mHit(attacker,target,6); this.log('벨베이느 추가타 6 마법'); }
     const dealtToHp = this.applyDamage(target,dmg);
     this.log(`${attacker.ko} → ${unitName(target)} : ${dmg} 물리`);
     state.attackCardsUsedThisTurn++;
@@ -466,7 +464,7 @@ const Engine={
   mHit(attacker, target, base){
     if(!target.alive) return 0;
     let dmg = this.damageCalc(attacker,target,base,'magic');
-    if(state.teamBuff.verbenaExtraTurns>0 && Math.random()<0.5){ this.mHit(attacker,target,6); this.log('벨베이느 추가타 6 마법'); }
+    if(state.teamBuff.verbenaExtraTurns>0 && Math.random()<0.5){ this.mHit(attacker,target,10); this.log('벨베이느 추가타 10 마법'); }
     const dealtToHp = this.applyDamage(target,dmg);
     this.log(`${attacker.ko} → ${unitName(target)} : ${dmg} 마법`);
     state.attackCardsUsedThisTurn++;
