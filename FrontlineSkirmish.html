@@ -664,7 +664,7 @@ function endPlayerTurn(){
   if(state.teamBuff.amaryllisTurns>0){
     const atkUses = state.attackCardsUsedThisTurn;
     const mult = (atkUses>=2)?3:1;
-    Engine.allies().forEach(a=>{ a.hp=Math.min(a.maxHp,a.hp+3*mult); a.guard+=5*mult; });
+    Engine.allies().forEach(a=>{ a.hp=Math.min(a.maxHp,a.hp+3*mult); a.guard+=1*mult; });
   }
 
   // Decrement temp team buffs
