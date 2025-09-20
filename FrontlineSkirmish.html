@@ -61,6 +61,11 @@
     .tooltip:hover .tip{display:block}
 
     .k{font-size:12px;color:#9fb3cf}
+  
+    /* --- selection outline --- */
+    .card.sel-front{outline:3px solid #ff9d5a; box-shadow:0 0 0 3px rgba(255,157,90,.12) inset}
+    .card.sel-back{outline:3px solid #6aa2ff; box-shadow:0 0 0 3px rgba(106,162,255,.12) inset}
+    
   </style>
 </head>
 <body>
@@ -175,8 +180,8 @@ const roster = {
     use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ ctx.mHit(self,t,7); ctx.dispelBuff(t,1); }}
   },
   Cresson:{ key:'Cresson', ko:'크레송', cost:2, target:'enemy', type:'phys',
-    desc:'적 하나 12 물리 피해, 자신 방어 +14, 다음 적턴 자신 도발',
-    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.pHit(self,t,12); self.guard+=14; ctx.state.tauntId=self.id; ctx.state.tauntUntil=ctx.state.turn; ctx.log(`${self.ko} 다음 적턴 도발`);} }
+    desc:'적 하나 12 물리 피해, 자신 방어 +10, 다음 적턴 자신 도발',
+    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.pHit(self,t,12); self.guard+=10; ctx.state.tauntId=self.id; ctx.state.tauntUntil=ctx.state.turn; ctx.log(`${self.ko} 다음 적턴 도발`);} }
   },
   Angelica:{ key:'Angelica', ko:'안젤리카', cost:1, target:'enemy', type:'phys',
     desc:'적 하나 4 물리 피해 x3',
@@ -217,21 +222,12 @@ const roster = {
     desc:'적 하나 35 물리, 자신 2턴 취약',
     use:(ctx,self,t)=>{ ctx.spend(self,3); if(!ctx.fizzle(self)){ ctx.pHit(self,t,35); self.status.vuln=Math.max(self.status.vuln,2); }}
   },
-  Catnip:{ key:'Catnip', ko:'캣닙', cost:3, target:'modal', type:'support',
-    desc:'아군 물공 +5단계(1턴), 후열 1명 교체(선택지 3)',
+  Catnip:{ key:'Catnip', ko:'캣닙', cost:3, target:'none', type:'support',
+    desc:'아군 전원 물공 +3단계(2턴, 팀버프)',
     use:(ctx,self)=>{ ctx.spend(self,3); if(!ctx.fizzle(self)){
-      ctx.teamBuff.physTemp+=5; ctx.teamBuff.physTempTurns=1;
-      // swap: choose back index then options
-      const back = ctx.back.filter(a=>a.alive);
-      if(back.length>0){
-        const idx = prompt(`교체할 후열 위치를 1~${ctx.back.length} 중 선택(숫자)`);
-        const i = (parseInt(idx||'0')-1)|0; if(i>=0 && i<ctx.back.length){
-          const options = ctx.randomRosterNotInParty(3);
-          const pick = prompt(`새 캐릭터 선택:\n1) ${options[0].ko}\n2) ${options[1].ko}\n3) ${options[2].ko}`);
-          const pi = (parseInt(pick||'0')-1)|0;
-          if(pi>=0 && pi<3){ ctx.replaceBack(i, options[pi]); }
-        }
-      }
+      ctx.teamBuff.physTemp += 3;
+      ctx.teamBuff.physTempTurns = Math.max(ctx.teamBuff.physTempTurns, 2);
+      ctx.log('캣닙: 아군 물공 +3단계 (2턴)');
     }}
   },
   Radiata:{ key:'Radiata', ko:'라지아타', cost:1, target:'none', type:'support',
@@ -243,8 +239,8 @@ const roster = {
     use:(ctx,self)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ ctx.enemies.forEach(e=>{ e.lycoPoison.push(5); }); }}
   },
   Shunran:{ key:'Shunran', ko:'슌란', cost:2, target:'enemy', type:'phys',
-    desc:'적 하나 14 물리, 자신 방어 +10',
-    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.pHit(self,t,14); self.guard+=10; }}
+    desc:'적 하나 14 물리, 자신 방어 +14',
+    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.pHit(self,t,14); self.guard+=14; }}
   },
   Hanaume:{ key:'Hanaume', ko:'하나우메', cost:1, target:'ally', type:'support',
     desc:'아군 하나 HP +10, 디버프 해제',
@@ -417,6 +413,7 @@ function enemiesByPattern(){
    Engine helpers
 ===================== */
 const Engine={
+  get teamBuff(){return state.teamBuff;},
   get state(){return state;},
   get enemies(){return state.enemies;},
   allies(){ return state.allAllies.filter(a=>a.alive); },
@@ -461,7 +458,7 @@ const Engine={
     // Verbena chain: extra 6 magic, 50% chance (3 turns team buff)
     if(state.teamBuff.verbenaExtraTurns>0 && Math.random()<0.5){ this.mHit(attacker,target,6); this.log('벨베이느 추가타 6 마법'); }
     const dealtToHp = this.applyDamage(target,dmg);
-    this.log(`${attacker.ko} → ${unitName(target)} ${dmg} 물리`);
+    this.log(`${attacker.ko} → ${unitName(target)} : ${dmg} 물리`);
     state.attackCardsUsedThisTurn++;
     refresh();
     return dealtToHp;
@@ -471,7 +468,7 @@ const Engine={
     let dmg = this.damageCalc(attacker,target,base,'magic');
     if(state.teamBuff.verbenaExtraTurns>0 && Math.random()<0.5){ this.mHit(attacker,target,6); this.log('벨베이느 추가타 6 마법'); }
     const dealtToHp = this.applyDamage(target,dmg);
-    this.log(`${attacker.ko} → ${unitName(target)} ${dmg} 마법`);
+    this.log(`${attacker.ko} → ${unitName(target)} : ${dmg} 마법`);
     state.attackCardsUsedThisTurn++;
     refresh();
     return dealtToHp;
@@ -539,7 +536,10 @@ function renderSelect(){
     const row = el('div',{class:'selectRow'});
     const p1 = el('div',{class:'pill', 'data-role':'front'},['전열']);
     const p2 = el('div',{class:'pill', 'data-role':'back'},['후열']);
+    updatePills();
     function updatePills(){
+      card.classList.toggle('sel-front', state.frontSel.has(i));
+      card.classList.toggle('sel-back', state.backSel.has(i));
       p1.classList.toggle('on', state.frontSel.has(i));
       p2.classList.toggle('on', state.backSel.has(i));
     }
@@ -579,11 +579,12 @@ function renderEnemies(){
     const hpBar = el('div',{class:'bar hp'},[el('span')]); bar(hpBar,e.hp,e.maxHp); u.appendChild(hpBar);
     const gdBar = el('div',{class:'bar guard'},[el('span')]); bar(gdBar,e.guard, Math.max(1,e.maxHp/2)); u.appendChild(gdBar);
     const st = [];
-    if(e.status.vuln>0) st.push('취약');
-    if(e.status.weaken>0) st.push('약화');
-    if(e.status.physImm>0) st.push('물리무효');
-    if(e.status.magImm>0) st.push('마법무효');
-    if(e.status.stun>0) st.push('기절');
+    if(e.status.vuln>0) st.push(`취약(${e.status.vuln}T)`);
+    if(e.status.weaken>0) st.push(`약화(${e.status.weaken}T)`);
+    if(e.status.physImm>0) st.push(`물리무효(${e.status.physImm}T)`);
+    if(e.status.magImm>0) st.push(`마법무효(${e.status.magImm}T)`);
+    if(e.status.stun>0) st.push(`기절(${e.status.stun}T)`);
+    if(e.status.regenTurns>0) st.push(`재생(${e.status.regenTurns}T)`);
     if(e.lycoPoison.length>0) st.push(`독×${e.lycoPoison.length}`);
     if(st.length) u.appendChild(el('div',{class:'k'},[st.join(' · ')]));
 
@@ -604,12 +605,19 @@ function renderAllies(){
     const hpBar = el('div',{class:'bar hp'},[el('span')]); bar(hpBar,a.hp,a.maxHp); u.appendChild(hpBar);
     const gdBar = el('div',{class:'bar guard'},[el('span')]); bar(gdBar,a.guard, 40); u.appendChild(gdBar);
     const st=[];
-    if(a.status.vuln>0) st.push('취약');
-    if(a.status.fatigue>0) st.push('지침');
-    if(a.status.poison5>0) st.push('독');
-    if(a.status.paral>0) st.push('마비');
+    if(a.status.vuln>0) st.push(`취약(${a.status.vuln}T)`);
+    if(a.status.fatigue>0) st.push(`지침(${a.status.fatigue}T)`);
+    if(a.status.poison5>0) st.push(`독(${a.status.poison5}T)`);
+    if(a.status.paral>0) st.push(`마비(${a.status.paral}T)`);
+    if(a.status.regenTurns>0) st.push(`재생(${a.status.regenTurns}T)`);
     if(a.status.nextAmp>0) st.push('다음공격+50%');
     if(a.status.nextFree>0) st.push('다음비용0');
+    if(a.pAtk>0) st.push(`물공+${a.pAtk}`);
+    if(a.mAtk>0) st.push(`마공+${a.mAtk}`);
+    if(state.teamBuff && state.teamBuff.physTempTurns>0) st.push(`팀 물공+${state.teamBuff.physTemp}(${state.teamBuff.physTempTurns}T)`);
+    if(state.teamBuff && state.teamBuff.magiTempTurns>0) st.push(`팀 마공+${state.teamBuff.magiTemp}(${state.teamBuff.magiTempTurns}T)`);
+    if(state.teamBuff && state.teamBuff.verbenaExtraTurns>0) st.push(`벨베이느 추가타(${state.teamBuff.verbenaExtraTurns}T)`);
+    if(state.teamBuff && state.teamBuff.amaryllisTurns>0) st.push(`아마릴리스 가호(${state.teamBuff.amaryllisTurns}T)`);
     if(st.length) u.appendChild(el('div',{class:'k'},[st.join(' · ')]));
     return u;
   }
@@ -773,7 +781,7 @@ function enemyAttack(e){
   // player's vuln on ally doubles damage
   if(target.status.vuln>0) dmg*=2;
   const takenFromHp = Engine.applyDamage(target,dmg);
-  Engine.log(`${unitName(e)} → ${target.ko} ${dmg} 피해`);
+  Engine.log(`${unitName(e)} → ${target.ko} : ${dmg} 피해`);
 }
 
 function enemyDebuff(e){
