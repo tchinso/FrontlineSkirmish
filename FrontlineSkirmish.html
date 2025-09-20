@@ -301,7 +301,7 @@ const roster = {
     }
   },
 Sterk:{ key:'Sterk', ko:'슈테르크', cost:2, target:'enemy', type:'phys',
-    desc:'적 하나 18 물리. 팀에 로로나가 없으면 자신 2턴 취약.',
+    desc:'적 하나 18 물리. 팀에 로로나가 있으면 자신 방어 +7, 없으면 자신 2턴 취약.',
     use:(ctx,self,t)=>{ 
       ctx.spend(self,2); 
       if(!ctx.fizzle(self)){ 
@@ -311,7 +311,10 @@ Sterk:{ key:'Sterk', ko:'슈테르크', cost:2, target:'enemy', type:'phys',
           self.status.vuln = Math.max(self.status.vuln, 2); 
           ctx.log(`${self.ko} 2턴간 취약`);
         } else {
-          ctx.log(`로로나와 함께여서 슈테르크가 취약 패널티를 받지 않았다!`);
+          // --- 수정된 부분 ---
+          self.guard += 7;
+          ctx.log(`로로나와 함께여서 슈테르크가 취약 패널티를 받지 않고 방어 +7!`);
+          // --- 여기까지 ---
         }
       } 
     }
