@@ -248,7 +248,7 @@ const roster = {
   },
   Hanaume:{ key:'Hanaume', ko:'하나우메', cost:1, target:'ally', type:'support',
     desc:'아군 하나 HP +10, 디버프 해제',
-    use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ t.hp=Math.min(t.maxHp,t.hp+10); t.status={vuln:0,fatigue:0,poison5:0,paral:0}; }}
+    use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ t.hp=Math.min(t.maxHp,t.hp+10); t.status.vuln=0; t.status.fatigue=0; t.status.poison5=0; t.status.paral=0; }}
   },
   Auseil:{ key:'Auseil', ko:'오제유', cost:2, target:'enemy', type:'magic',
     desc:'자신 HP -3, 적 하나 18 마법',
@@ -292,7 +292,7 @@ const roster = {
   },
   Ayesha:{ key:'Ayesha', ko:'아샤', cost:2, target:'none', type:'support',
     desc:'아군 전원 HP +10, 디버프 전부 해제',
-    use:(ctx,self)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.allies().forEach(a=>{ a.hp=Math.min(a.maxHp,a.hp+10); a.status={vuln:0,fatigue:0,poison5:0,paral:0}; }); }}
+    use:(ctx,self)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.allies().forEach(a=>{ a.hp=Math.min(a.maxHp,a.hp+10); a.status.vuln=0; a.status.fatigue=0; a.status.poison5=0; a.status.paral=0; }); }}
   },
   Wilbell:{ key:'Wilbell', ko:'윌벨', cost:3, target:'none', type:'magic',
     desc:'모든 적 8 마법, 1턴 기절(행동 50% 실패)',
