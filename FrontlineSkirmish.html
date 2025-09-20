@@ -202,8 +202,8 @@ const roster = {
     }
   },
   Hazel:{ key:'Hazel', ko:'헤이즐', cost:1, target:'none', type:'support',
-    desc:'아군 전원 HP +5, 방어 +5',
-    use:(ctx,self)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ ctx.allies().forEach(a=>{ a.hp=Math.min(a.maxHp,a.hp+5); a.guard+=5; }); }}
+    desc:'아군 전원 HP +5, 방어 +2',
+    use:(ctx,self)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ ctx.allies().forEach(a=>{ a.hp=Math.min(a.maxHp,a.hp+5); a.guard+=2; }); }}
   },
   Bergamot:{ key:'Bergamot', ko:'베르가모트', cost:2, target:'enemy', type:'phys',
     desc:'적 하나 15 물리(상대 HP≥50%면 +15 추가)',
@@ -263,7 +263,7 @@ const roster = {
     use:(ctx,self)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.teamBuff.magiTemp+=1; ctx.teamBuff.magiTempTurns=1; ctx.teamBuff.verbenaExtraTurns=3; }}
   },
   Amaryllis:{ key:'Amaryllis', ko:'아마릴리스', cost:2, target:'none', type:'support',
-    desc:'3턴간 턴 종료시 아군 전원 HP+3, 방어+5 (해당 턴 공격카드 2장↑면 2배)',
+    desc:'3턴간 턴 종료시 아군 전원 HP+3, 방어+1 (해당 턴 공격카드 2장↑면 3배)',
     use:(ctx,self)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.teamBuff.amaryllisTurns=Math.max(ctx.teamBuff.amaryllisTurns,3); }}
   },
   Rorona:{ key:'Rorona', ko:'로로나', cost:2, target:'enemy', type:'magic',
@@ -663,7 +663,7 @@ function endPlayerTurn(){
   // Amaryllis: at end of turn heal & guard
   if(state.teamBuff.amaryllisTurns>0){
     const atkUses = state.attackCardsUsedThisTurn;
-    const mult = (atkUses>=2)?2:1;
+    const mult = (atkUses>=2)?3:1;
     Engine.allies().forEach(a=>{ a.hp=Math.min(a.maxHp,a.hp+3*mult); a.guard+=5*mult; });
   }
 
