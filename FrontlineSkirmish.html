@@ -220,7 +220,7 @@ const roster = {
   },
   Tandrion:{ key:'Tandrion', ko:'탄드리온', cost:3, target:'enemy', type:'phys',
     desc:'적 하나 40 물리, 자신 2턴 취약',
-    use:(ctx,self,t)=>{ ctx.spend(self,3); if(!ctx.fizzle(self)){ ctx.pHit(self,t,40); self.status.vuln=Math.max(self.status.vuln,1); }}
+    use:(ctx,self,t)=>{ ctx.spend(self,3); if(!ctx.fizzle(self)){ ctx.pHit(self,t,40); self.status.vuln=Math.max(self.status.vuln,2); }}
   },
   Catnip:{ key:'Catnip', ko:'캣닙', cost:3, target:'none', type:'support',
     desc:'아군 전원 물공 +3단계(2턴, 팀버프)',
