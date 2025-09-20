@@ -462,7 +462,7 @@ const Engine={
   pAoE(attacker, base){ this.enemies.forEach(e=>{ if(e.alive) this.pHit(attacker,e,base); }); },
   dispelBuff(target, n){
     let removed=0;
-    const order=['physImm','magImm','weaken','regen'];
+    const order=['physImm','magImm','regen'];
     for(const k of order){ if(target.status[k]>0){ target.status[k]=0; removed++; if(removed>=n) break; } }
     if(removed>0) this.log(`${unitName(target)} 강화 ${removed}개 제거`);
   },
