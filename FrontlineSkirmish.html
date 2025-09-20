@@ -62,7 +62,7 @@
 
     .k{font-size:12px;color:#9fb3cf}
   </style>
-<script type="text/javascript" nonce="5b4187ec281a466ba5b67372903" src="//local.adguard.org?ts=1758348474410&amp;type=content-script&amp;dmn=chatgpt.com&amp;url=https%3A%2F%2Fchatgpt.com%2Fbackend-api%2Festuary%2Fcontent%3Fid%3Dfile-9zfBoYuoMXKnDn4oDA1n2T%26ts%3D488435%26p%3Dfs%26cid%3D1%26sig%3D37f74673a440648390b57e9ea3f93006e2306e6c26a07a05ec4cb32171f819d6%26v%3D0&amp;app=msedge.exe&amp;css=2&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1"></script><script type="text/javascript" nonce="5b4187ec281a466ba5b67372903" src="//local.adguard.org?ts=1758348474410&amp;name=AdGuard%20Extra&amp;name=AdGuard%20Popup%20Blocker&amp;name=AdsBypasser&amp;name=Anti-Adblock%20Killer%20%7C%20Reek&amp;name=Web%20of%20Trust&amp;type=user-script"></script></head>
+</head>
 <body>
   <header>
     <h1>Frontline Skirmish</h1>
@@ -288,8 +288,8 @@ const roster = {
     use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ t.hp=Math.min(t.maxHp,t.hp+10); t.status.nextAmp=1; }}
   },
   Logy:{ key:'Logy', ko:'로지', cost:2, target:'enemy', type:'phys',
-    desc:'적 하나 14 피해, 자신의 다음 공격 비용 0',
-    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.pHit(self,t,14); self.status.nextFree=1; }}
+    desc:'적 하나 14 피해, 자신의 다음 턴 첫 공격 비용 0',
+    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.pHit(self,t,14); self.status.nextTurnFree=1; }}
   },
   Nelke:{ key:'Nelke', ko:'네르케', cost:1, target:'self', type:'support',
     desc:'자신 방어 +8, 무작위 물약(0코스트) 1개 소환',
@@ -356,7 +356,7 @@ let nextAllyId=1, nextEnemyId=1;
 
 function newAlly(def){
   const base={ id:nextAllyId++, key:def.key, ko:def.ko, img:def.key, maxHp:20, hp:20, guard:0, pAtk:0, mAtk:0, alive:true,
-    status:{vuln:0,fatigue:0,poison5:0,paral:0, nextAmp:0,nextFree:0},
+    status:{vuln:0,fatigue:0,poison5:0,paral:0, nextAmp:0,nextFree:0,nextTurnFree:0},
     type:def.type, cost:def.cost, desc:def.desc };
   return base;
 }
@@ -702,6 +702,14 @@ function enemyTurn(){
   state.energy += 3;
   state.usedSwap=false;
   state.attackCardsUsedThisTurn=0;
+
+  // 다음 턴 예약된 0코스트 효과를 이번 턴으로 전환
+  Engine.allies().forEach(a=>{
+    if(a.status && a.status.nextTurnFree){
+      a.status.nextFree = 1;
+      a.status.nextTurnFree = 0;
+    }
+  });
 
   // Clear taunt if expired
   if(state.tauntUntil && state.turn>state.tauntUntil){ state.tauntId=null; state.tauntUntil=0; }
