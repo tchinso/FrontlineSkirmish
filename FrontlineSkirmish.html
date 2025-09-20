@@ -454,7 +454,7 @@ const Engine={
     if(attacker.status.fatigue>0) dmg = Math.floor(dmg*0.5);
     if(kind==='phys' && target.status.physImm>0) dmg=0;
     if(kind==='magic' && target.status.magImm>0) dmg=0;
-    if(target.status.vuln>0) dmg = Math.floor(dmg*2);
+    if(target.status.vuln>0) dmg = Math.floor(dmg*1.5);
     // Escha amp
     if(attacker.status.nextAmp){ dmg = Math.floor(dmg*2); attacker.status.nextAmp=0; }
     return Math.max(0, dmg);
@@ -792,7 +792,7 @@ function enemyAttack(e){
   let dmg = e.baseDmg;
   if(e.status.weaken>0) dmg=Math.floor(dmg*0.8);
   // player's vuln on ally doubles damage
-  if(target.status.vuln>0) dmg*=2;
+  if(target.status.vuln>0) dmg = Math.floor(dmg * 1.5); 
   const takenFromHp = Engine.applyDamage(target,dmg);
   Engine.log(`${unitName(e)} → ${target.ko} : ${dmg} 피해`);
 }
