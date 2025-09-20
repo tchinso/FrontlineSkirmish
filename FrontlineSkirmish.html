@@ -279,7 +279,7 @@ const roster = {
     use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ const was=t.alive; const dealt=ctx.pHit(self,t,15); if(was && !t.alive){ self.pAtk+=3; ctx.log('메루루 물공 +3단계'); } }}
   },
   Mimi:{ key:'Mimi', ko:'미미', cost:1, target:'enemy', type:'phys',
-    desc:'토토리 없으면 4 물리×2, 있으면 5 물리×4 및 대상 1턴 취약',
+    desc:'토토리 없으면 3 물리×3, 있으면 5 물리×4 및 대상 1턴 취약',
     use:(ctx,self,t)=>{ 
       ctx.spend(self,1); 
       if(!ctx.fizzle(self)){ 
@@ -292,9 +292,9 @@ const roster = {
           t.status.vuln = Math.max(t.status.vuln, 1); // 대상을 1턴간 취약 상태로 만듭니다.
           ctx.log(`${unitName(t)} 1턴간 취약`); // 로그에 취약 부여를 기록합니다.
         } else {
-          // 토토리가 없을 경우: 4 물리 x 2
-          for(let i=0; i<2; i++) {
-            ctx.pHit(self, t, 4);
+          // 토토리가 없을 경우: 3 물리 x 3
+          for(let i=0; i<3; i++) {
+            ctx.pHit(self, t, 3);
           }
         }
       }
@@ -371,6 +371,14 @@ Sterk:{ key:'Sterk', ko:'슈테르크', cost:2, target:'enemy', type:'phys',
     desc:'적 하나 3 물리×7',
     use:(ctx,self,t)=>{ ctx.spend(self,3); if(!ctx.fizzle(self)){ for(let i=0;i<7;i++) ctx.pHit(self,t,3); }}
   },
+  Natsume:{ key:'Natsume', ko:'나츠메', cost:3, target:'none', type:'support',
+    desc:'아군 전원: 이번 적 턴 받는 공격 70% 회피, 다음 턴부터 5턴간 에너지 +1',
+    use:(ctx,self)=>{ ctx.spend(self,3); if(!ctx.fizzle(self)){
+      ctx.teamBuff.evadeTurn = ctx.state.turn; ctx.teamBuff.evadeChance = 0.7;
+      ctx.teamBuff.energyRegenPlusPending = Math.max(ctx.teamBuff.energyRegenPlusPending, 5);
+      ctx.log('나츠메: 이번 적 턴 아군 회피 70%, 다음 턴부터 5턴 에너지 +1');
+    }}
+  },
 };
 
 const ROSTER_KEYS = Object.keys(roster);
@@ -393,7 +401,7 @@ const state = {
   log:[],
   tempLogs:[],
   attackCardsUsedThisTurn:0,
-  teamBuff: {magiTemp:0,magiTempTurns:0,physTemp:0,physTempTurns:0,verbenaExtraTurns:0,regenTurns:0,regenAmount:0,amaryllisTurns:0},
+  teamBuff: {magiTemp:0,magiTempTurns:0,physTemp:0,physTempTurns:0,verbenaExtraTurns:0,regenTurns:0,regenAmount:0,amaryllisTurns:0,evadeTurn:0,evadeChance:0,energyRegenPlusTurns:0,energyRegenPlusPending:0},
 };
 
 let nextAllyId=1, nextEnemyId=1;
@@ -759,9 +767,16 @@ function enemyTurn(){
     else { enemyBuff(e); }
   }
 
+  // Activate pending energy regen bonus so it starts on this round's replenish
+  if(state.teamBuff && state.teamBuff.energyRegenPlusPending>0){
+    state.teamBuff.energyRegenPlusTurns = Math.max(state.teamBuff.energyRegenPlusTurns||0, state.teamBuff.energyRegenPlusPending);
+    state.teamBuff.energyRegenPlusPending = 0;
+  }
   // After enemy turn: replenish energy and next round
   state.turn++;
-  state.energy += 3;
+  const regenBase = 3 + ((state.teamBuff && state.teamBuff.energyRegenPlusTurns>0)?1:0);
+  state.energy += regenBase;
+  if(state.teamBuff && state.teamBuff.energyRegenPlusTurns>0) state.teamBuff.energyRegenPlusTurns--;
   state.usedSwap=false;
   state.attackCardsUsedThisTurn=0;
 
@@ -789,6 +804,11 @@ function enemyAttack(e){
   if(state.tauntId){ const t=state.allAllies.find(a=>a.id===state.tauntId && a.alive); if(t) target=t; }
   if(!target){ target = (aliveFront.length? aliveFront : state.back.filter(a=>a.alive))[R(0,(aliveFront.length? aliveFront : state.back.filter(a=>a.alive)).length-1)]; }
   if(!target) return;
+  // Natsume: team evasion active only during the enemy turn immediately after use
+  if(state.teamBuff && state.teamBuff.evadeTurn===state.turn && Math.random()<(state.teamBuff.evadeChance||0)){
+    Engine.log(`${unitName(e)} → ${target.ko} 공격 회피(나츠메)`);
+    return;
+  }
   let dmg = e.baseDmg;
   if(e.status.weaken>0) dmg=Math.floor(dmg*0.8);
   // player's vuln on ally doubles damage
@@ -852,7 +872,7 @@ function beginBattle(){
   state.back  = [...state.backSel].map(i=> newAlly(state.offered[i]));
   state.allAllies = [...state.front, ...state.back];
   state.enemies = enemiesByPattern();
-  state.turn=1; state.energy=5; state.usedSwap=false; state.log=[]; state.potions=[]; state.teamBuff={magiTemp:0,magiTempTurns:0,physTemp:0,physTempTurns:0,verbenaExtraTurns:0,regenTurns:0,regenAmount:0,amaryllisTurns:0};
+  state.turn=1; state.energy=5; state.usedSwap=false; state.log=[]; state.potions=[]; state.teamBuff={magiTemp:0,magiTempTurns:0,physTemp:0,physTempTurns:0,verbenaExtraTurns:0,regenTurns:0,regenAmount:0,amaryllisTurns:0,evadeTurn:0,evadeChance:0,energyRegenPlusTurns:0,energyRegenPlusPending:0};
 
   // UI
   document.querySelector('#viewSelect').classList.remove('active');
