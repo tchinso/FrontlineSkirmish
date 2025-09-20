@@ -313,7 +313,7 @@ const roster = {
     use:(ctx,self)=>{ ctx.spend(self,3); if(!ctx.fizzle(self)){ ctx.mAoE(self,8); ctx.enemies.forEach(e=>e.status.stun=1); }}
   },
   Escha:{ key:'Escha', ko:'에스카', cost:1, target:'ally', type:'support',
-    desc:'아군 하나 HP +10, 다음 공격 50% 증폭',
+    desc:'아군 하나 HP +10, 다음 공격 2배 증폭',
     use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ t.hp=Math.min(t.maxHp,t.hp+10); t.status.nextAmp=1; }}
   },
   Logy:{ key:'Logy', ko:'로지', cost:2, target:'enemy', type:'phys',
@@ -441,7 +441,7 @@ const Engine={
     if(kind==='magic' && target.status.magImm>0) dmg=0;
     if(target.status.vuln>0) dmg = Math.floor(dmg*2);
     // Escha amp
-    if(attacker.status.nextAmp){ dmg = Math.floor(dmg*1.5); attacker.status.nextAmp=0; }
+    if(attacker.status.nextAmp){ dmg = Math.floor(dmg*2); attacker.status.nextAmp=0; }
     return Math.max(0, dmg);
   },
   applyDamage(target, dmg){
