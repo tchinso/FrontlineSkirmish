@@ -292,9 +292,9 @@ const roster = {
           t.status.vuln = Math.max(t.status.vuln, 1); // 대상을 1턴간 취약 상태로 만듭니다.
           ctx.log(`${unitName(t)} 1턴간 취약`); // 로그에 취약 부여를 기록합니다.
         } else {
-          // 토토리가 없을 경우: 3 물리 x 3
+          // 토토리가 없을 경우: 4 물리 x 2
           for(let i=0; i<2; i++) {
-            ctx.pHit(self, t, 5);
+            ctx.pHit(self, t, 4);
           }
         }
       }
@@ -372,11 +372,11 @@ Sterk:{ key:'Sterk', ko:'슈테르크', cost:2, target:'enemy', type:'phys',
     use:(ctx,self,t)=>{ ctx.spend(self,3); if(!ctx.fizzle(self)){ for(let i=0;i<7;i++) ctx.pHit(self,t,3); }}
   },
   Natsume:{ key:'Natsume', ko:'나츠메', cost:3, target:'none', type:'support',
-    desc:'아군 전원: 이번 적 턴 받는 공격 70% 회피, 다음 턴부터 5턴간 에너지 +1',
+    desc:'아군 전원: 이번 적 턴 받는 공격 70% 회피, 다음 턴부터 3턴간 에너지 +1',
     use:(ctx,self)=>{ ctx.spend(self,3); if(!ctx.fizzle(self)){
       ctx.teamBuff.evadeTurn = ctx.state.turn; ctx.teamBuff.evadeChance = 0.7;
-      ctx.teamBuff.energyRegenPlusPending = Math.max(ctx.teamBuff.energyRegenPlusPending, 5);
-      ctx.log('나츠메: 이번 적 턴 아군 회피 70%, 다음 턴부터 5턴 에너지 +1');
+      ctx.teamBuff.energyRegenPlusPending = Math.max(ctx.teamBuff.energyRegenPlusPending, 3);
+      ctx.log('나츠메: 이번 적 턴 아군 회피 70%, 다음 턴부터 3턴 에너지 +1');
     }}
   },
 };
