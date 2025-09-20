@@ -263,8 +263,8 @@ const roster = {
     use:(ctx,self)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.teamBuff.amaryllisTurns=Math.max(ctx.teamBuff.amaryllisTurns,3); }}
   },
   Rorona:{ key:'Rorona', ko:'로로나', cost:2, target:'enemy', type:'magic',
-    desc:'적 하나 7 마법, 아군 전원 HP +7',
-    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.mHit(self,t,7); ctx.allies().forEach(a=>a.hp=Math.min(a.maxHp,a.hp+7)); }}
+    desc:'적 하나 10 마법, 아군 전원 HP +7',
+    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.mHit(self,t,10); ctx.allies().forEach(a=>a.hp=Math.min(a.maxHp,a.hp+7)); }}
   },
   Marie:{ key:'Marie', ko:'마리', cost:2, target:'none', type:'magic',
     desc:'모든 적 50 마법, 사용 후 자신 소멸',
@@ -301,8 +301,8 @@ const roster = {
     }
   },
   Sterk:{ key:'Sterk', ko:'슈테르크', cost:2, target:'enemy', type:'phys',
-    desc:'적 하나 20 물리, 자신 2턴 취약',
-    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.pHit(self,t,20); self.status.vuln=Math.max(self.status.vuln,2); }}
+    desc:'적 하나 20 물리, 자신 1턴 취약',
+    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.pHit(self,t,20); self.status.vuln=Math.max(self.status.vuln,1); }}
   },
   Ayesha:{ key:'Ayesha', ko:'아샤', cost:2, target:'none', type:'support',
     desc:'아군 전원 HP +10, 디버프 전부 해제',
