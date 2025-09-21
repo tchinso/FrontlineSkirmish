@@ -100,7 +100,7 @@
           <div class="row" style="justify-content:space-between;margin-bottom:8px">
             <div>턴: <span id="turnNum">1</span> · 에너지 <span class="energy" id="energyVal">5</span></div>
             <div class="sticky-controls">
-              <button id="btnSwap" title="이번 턴 1회 전열↔후열 교체">전열/후열 교체</button>
+              <button id="btnSwap" title="이번 턴 2회 전열↔후열 교체">전열/후열 교체</button>
               <button id="btnEnd">턴 종료</button>
             </div>
           </div>
@@ -395,7 +395,7 @@ const state = {
   enemies:[],
   turn:1,
   energy:5,
-  usedSwap:false,
+  usedSwap:0,
   pendingTarget:null,
   tauntId:null, tauntUntil:0,
   log:[],
@@ -777,7 +777,7 @@ function enemyTurn(){
   const regenBase = 3 + ((state.teamBuff && state.teamBuff.energyRegenPlusTurns>0)?1:0);
   state.energy += regenBase;
   if(state.teamBuff && state.teamBuff.energyRegenPlusTurns>0) state.teamBuff.energyRegenPlusTurns--;
-  state.usedSwap=false;
+  state.usedSwap=0;
   state.attackCardsUsedThisTurn=0;
 
   // 다음 턴 예약된 0코스트 효과를 이번 턴으로 전환
@@ -849,14 +849,14 @@ function checkEnd(){
    Swap System
 ===================== */
 function doSwap(){
-  if(state.usedSwap){ Engine.log('이번 턴 교체는 이미 했어'); return; }
+  if(state.usedSwap>=2){ Engine.log('이번 턴 교체는 이미 2회 했어'); return; }
   const fi = prompt('전열에서 교체할 위치 (1~3)');
   const bi = prompt('후열에서 교체할 위치 (1~3)');
   const f = (parseInt(fi||'0')-1)|0, b=(parseInt(bi||'0')-1)|0;
   if(f<0||f>=3||b<0||b>=3){ Engine.log('잘못된 위치'); return; }
   const fa=state.front[f], ba=state.back[b];
   // allow dead frontline to be swapped
-  state.front[f]=ba; state.back[b]=fa; state.usedSwap=true; Engine.log('전열/후열 교체 완료'); refresh();
+  state.front[f]=ba; state.back[b]=fa; state.usedSwap++; Engine.log('전열/후열 교체 완료'); refresh();
 }
 
 /* =====================
@@ -889,7 +889,7 @@ function beginBattle(){
     Engine.log(`다수의 적 출현! 시작 에너지가 5로 조정됩니다.`);
   }
 
-  state.usedSwap=false;
+  state.usedSwap=0;
   state.log=[];
   state.potions=[];
   state.teamBuff={magiTemp:0,magiTempTurns:0,physTemp:0,physTempTurns:0,verbenaExtraTurns:0,regenTurns:0,regenAmount:0,amaryllisTurns:0,evadeTurn:0,evadeChance:0,energyRegenPlusTurns:0,energyRegenPlusPending:0};
