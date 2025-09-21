@@ -421,11 +421,11 @@ function newEnemy(pattern){
 
 function enemiesByPattern(){
   const patterns=[
-    {count:1, hp:R(211,321), dmin:16,dmax:22},
-    {count:2, hp:R(151,241), dmin:13,dmax:19},
-    {count:3, hp:R(121,181), dmin:11,dmax:16},
-    {count:4, hp:R(91,121),  dmin:9,dmax:13},
-    {count:5, hp:R(76,81),   dmin:8, dmax:11},
+    {count:1, hp:R(211,321), dmin:15,dmax:20},
+    {count:2, hp:R(151,241), dmin:13,dmax:17},
+    {count:3, hp:R(121,181), dmin:10,dmax:14},
+    {count:4, hp:R(91,121),  dmin:9,dmax:12},
+    {count:5, hp:R(76,81),   dmin:7,dmax:10},
   ];
   const pick=patterns[R(0,patterns.length-1)];
   const arr=[]; for(let i=0;i<pick.count;i++) arr.push(newEnemy(pick));
