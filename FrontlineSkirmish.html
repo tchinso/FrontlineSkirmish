@@ -425,7 +425,7 @@ function enemiesByPattern(){
     {count:2, hp:R(151,241), dmin:14,dmax:18},
     {count:3, hp:R(121,181), dmin:11,dmax:15},
     {count:4, hp:R(91,121),  dmin:9,dmax:12},
-    {count:5, hp:R(76,81),   dmin:7, dmax:10},
+    {count:5, hp:R(76,81),   dmin:6, dmax:9},
   ];
   const pick=patterns[R(0,patterns.length-1)];
   const arr=[]; for(let i=0;i<pick.count;i++) arr.push(newEnemy(pick));
@@ -825,7 +825,17 @@ function enemyAttack(e){
 }
 
 function enemyDebuff(e){
-  const pool = Engine.allies(); if(pool.length===0) return; const t = pool[R(0,pool.length-1)];
+  // 전열에 살아있는 아군을 우선 타겟으로 설정
+  const aliveFront = state.front.filter(a=>a.alive);
+  const aliveBack = state.back.filter(a=>a.alive);
+  
+  // 타겟 풀: 전열에 생존자가 있으면 전열, 없으면 후열
+  const targetPool = aliveFront.length > 0 ? aliveFront : aliveBack;
+  
+  // 타겟이 없으면 함수 종료
+  if(targetPool.length === 0) return;
+
+  const t = targetPool[R(0, targetPool.length - 1)];
   const kind = ['vuln','fatigue','poison5','paral'][R(0,3)];
   if(kind==='vuln') t.status.vuln=Math.max(t.status.vuln,2);
   if(kind==='fatigue') t.status.fatigue=Math.max(t.status.fatigue,2);
