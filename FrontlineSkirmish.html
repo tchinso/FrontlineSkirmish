@@ -872,7 +872,27 @@ function beginBattle(){
   state.back  = [...state.backSel].map(i=> newAlly(state.offered[i]));
   state.allAllies = [...state.front, ...state.back];
   state.enemies = enemiesByPattern();
-  state.turn=1; state.energy=5; state.usedSwap=false; state.log=[]; state.potions=[]; state.teamBuff={magiTemp:0,magiTempTurns:0,physTemp:0,physTempTurns:0,verbenaExtraTurns:0,regenTurns:0,regenAmount:0,amaryllisTurns:0,evadeTurn:0,evadeChance:0,energyRegenPlusTurns:0,energyRegenPlusPending:0};
+  state.turn=1;
+  
+  const enemyCount = state.enemies.length; // 생성된 적의 숫자를 확인합니다.
+  if (enemyCount === 1) {
+    // 적이 1명이면 에너지를 3으로 설정
+    state.energy = 3;
+    Engine.log(`강적 출현! 시작 에너지가 3으로 조정됩니다.`);
+  } else if (enemyCount <= 3) {
+    // 적이 2~3명이면 에너지를 4로 설정
+    state.energy = 4;
+    Engine.log(`시작 에너지가 4로 조정됩니다.`);
+  } else {
+    // 그 외 (적이 4~5명) 에너지를 5로 설정
+    state.energy = 5;
+    Engine.log(`다수의 적 출현! 시작 에너지가 5로 조정됩니다.`);
+  }
+
+  state.usedSwap=false;
+  state.log=[];
+  state.potions=[];
+  state.teamBuff={magiTemp:0,magiTempTurns:0,physTemp:0,physTempTurns:0,verbenaExtraTurns:0,regenTurns:0,regenAmount:0,amaryllisTurns:0,evadeTurn:0,evadeChance:0,energyRegenPlusTurns:0,energyRegenPlusPending:0};
 
   // UI
   document.querySelector('#viewSelect').classList.remove('active');
