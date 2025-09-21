@@ -223,7 +223,7 @@ const roster = {
     use:(ctx,self,t)=>{ ctx.spend(self,3); if(!ctx.fizzle(self)){ ctx.pHit(self,t,40); self.status.vuln=Math.max(self.status.vuln,3); }}
   },
   Catnip:{ key:'Catnip', ko:'캣닙', cost:3, target:'none', type:'support',
-    desc:'아군 전원 물공 +3단계(2턴, 팀버프)',
+    desc:'(3코)아군 전원 물공 +3단계(2턴, 팀버프)',
     use:(ctx,self)=>{ ctx.spend(self,3); if(!ctx.fizzle(self)){
       ctx.teamBuff.physTemp += 3;
       ctx.teamBuff.physTempTurns = Math.max(ctx.teamBuff.physTempTurns, 2);
