@@ -301,14 +301,14 @@ const roster = {
     }
   },
 Sterk:{ key:'Sterk', ko:'슈테르크', cost:2, target:'enemy', type:'phys',
-    desc:'적 하나 18 물리. 팀에 로로나가 있으면 자신 방어 +7, 없으면 자신 2턴 취약.',
+    desc:'적 하나 18 물리. 팀에 로로나가 있으면 패널티없이 자신 방어 +7, 없으면 자신 2턴 취약.',
     use:(ctx,self,t)=>{ 
       ctx.spend(self,2); 
       if(!ctx.fizzle(self)){ 
         ctx.pHit(self,t,18); 
         const hasRorona = ctx.partyHas('Rorona') || ctx.partyHas('RoronaAdult');
         if (!hasRorona) {
-          self.status.vuln = Math.max(self.status.vuln, 2); 
+          self.status.vuln = Math.max(self.status.vuln, 3); 
           ctx.log(`${self.ko} 2턴간 취약`);
         } else {
           // --- 수정된 부분 ---
