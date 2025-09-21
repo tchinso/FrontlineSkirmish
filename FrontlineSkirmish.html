@@ -179,20 +179,20 @@ const roster = {
   desc:'적 하나 7 마법 피해, 적 강화 전부 제거',
   use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ ctx.mHit(self,t,7); ctx.dispelBuff(t,99); }}
   },
-  Cresson:{ key:'Cresson', ko:'크레송', cost:2, target:'enemy', type:'phys',
+  Cresson:{ key:'Cresson', ko:'크레송', cost:1, target:'enemy', type:'phys',
     desc:'적 하나 4 물리 피해, 자신 방어 +25, 다음 적 턴 자신 도발',
-    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.pHit(self,t,4); self.guard+=25; ctx.state.tauntId=self.id; ctx.state.tauntUntil=ctx.state.turn; ctx.log(`${self.ko} 다음 적턴 도발`);} }
+    use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ ctx.pHit(self,t,4); self.guard+=25; ctx.state.tauntId=self.id; ctx.state.tauntUntil=ctx.state.turn; ctx.log(`${self.ko} 다음 적턴 도발`);} }
   },
-  Angelica:{ key:'Angelica', ko:'안젤리카', cost:1, target:'enemy', type:'phys',
+  Angelica:{ key:'Angelica', ko:'안젤리카', cost:2, target:'enemy', type:'phys',
     desc:'적 하나 4 물리 피해 x3',
-    use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ for(let i=0;i<3;i++) ctx.pHit(self,t,4); }}
+    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ for(let i=0;i<3;i++) ctx.pHit(self,t,4); }}
   },
   Varerian:{ key:'Varerian', ko:'발레리안', cost:2, target:'enemy', type:'phys',
-    desc:'적 하나 12 물리, 준 피해만큼 흡혈. 대상에게 재생이 있으면 훔쳐온다.',
+    desc:'적 하나 14 물리, 준 피해만큼 흡혈. 대상에게 재생이 있으면 훔쳐온다.',
     use:(ctx,self,t)=>{ 
       ctx.spend(self,2); 
       if(!ctx.fizzle(self)){ 
-        const dealt=ctx.pHit(self,t,12); 
+        const dealt=ctx.pHit(self,t,14); 
         self.hp = Math.min(self.maxHp, self.hp+dealt);
         // --- 재생 훔치기 로직 시작 ---
         if (t.status && t.status.regenTurns > 0) {
@@ -211,8 +211,8 @@ const roster = {
     use:(ctx,self)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ ctx.allies().forEach(a=>{ a.hp=Math.min(a.maxHp,a.hp+7); a.guard+=3; }); }}
   },
   Bergamot:{ key:'Bergamot', ko:'베르가모트', cost:2, target:'enemy', type:'phys',
-    desc:'적 하나 10 물리(상대 HP≥50%면 +20 추가 물리)',
-    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ let dmg=10; if(t.hp>=t.maxHp*0.5) dmg+=20; ctx.pHit(self,t,dmg); }}
+    desc:'적 하나 10 물리(상대 HP≥50%면 +25 추가 물리)',
+    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ let dmg=10; if(t.hp>=t.maxHp*0.5) dmg+=25; ctx.pHit(self,t,dmg); }}
   },
   Marjoram:{ key:'Marjoram', ko:'마조람', cost:2, target:'none', type:'phys',
     desc:'적 전체 5 물리, 아군 전원 물공 +1단계',
@@ -239,16 +239,16 @@ const roster = {
     use:(ctx,self)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ ctx.enemies.forEach(e=>{ e.lycoPoison.push(5); }); }}
   },
   Shunran:{ key:'Shunran', ko:'슌란', cost:2, target:'enemy', type:'phys',
-    desc:'적 하나 12 물리, 자신 방어 +10',
-    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.pHit(self,t,12); self.guard+=10; }}
+    desc:'적 하나 14 물리, 자신 방어 +10',
+    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.pHit(self,t,14); self.guard+=10; }}
   },
   Hanaume:{ key:'Hanaume', ko:'하나우메', cost:1, target:'ally', type:'support',
     desc:'아군 하나 HP +15, 디버프 해제',
     use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ t.hp=Math.min(t.maxHp,t.hp+15); t.status.vuln=0; t.status.fatigue=0; t.status.poison5=0; t.status.paral=0; }}
   },
-  Auseil:{ key:'Auseil', ko:'오제유', cost:2, target:'enemy', type:'magic',
-    desc:'자신 HP -3, 적 하나 20 마법',
-    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ self.hp=Math.max(1,self.hp-3); ctx.mHit(self,t,20); }}
+  Auseil:{ key:'Auseil', ko:'오제유', cost:1, target:'enemy', type:'magic',
+    desc:'자신 HP -3, 적 하나 14 마법',
+    use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ self.hp=Math.max(1,self.hp-3); ctx.mHit(self,t,14); }}
   },
   Phonic:{ key:'Phonic', ko:'포닉', cost:2, target:'none', type:'phys',
     desc:'모든 적 2 물리, 3턴 취약+공격력감소',
@@ -263,15 +263,15 @@ const roster = {
     use:(ctx,self)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.teamBuff.amaryllisTurns=Math.max(ctx.teamBuff.amaryllisTurns,3); }}
   },
   Rorona:{ key:'Rorona', ko:'로로나', cost:2, target:'enemy', type:'magic',
-    desc:'적 하나 10 마법, 아군 전원 HP +7',
-    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.mHit(self,t,10); ctx.allies().forEach(a=>a.hp=Math.min(a.maxHp,a.hp+7)); }}
+    desc:'적 하나 12 마법, 아군 전원 HP +7',
+    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.mHit(self,t,12); ctx.allies().forEach(a=>a.hp=Math.min(a.maxHp,a.hp+7)); }}
   },
   Marie:{ key:'Marie', ko:'마리', cost:2, target:'none', type:'magic',
     desc:'모든 적 50 마법, 사용 후 자신 소멸',
     use:(ctx,self)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.mAoE(self,50); ctx.vanish(self); }}
   },
   Totori:{ key:'Totori', ko:'토토리', cost:1, target:'none', type:'magic',
-    desc:'모든 적 14 마법, 처치 있으면 소멸하지 않음',
+    desc:'모든 적 14 마법, 처치 시 소멸하지 않음',
     use:(ctx,self)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ const before=ctx.enemies.filter(e=>e.alive).length; ctx.mAoE(self,14); const after=ctx.enemies.filter(e=>e.alive).length; if(after===before){ ctx.vanish(self);} }}
   },
   Meruru:{ key:'Meruru', ko:'메루루', cost:2, target:'enemy', type:'phys',
@@ -279,15 +279,15 @@ const roster = {
     use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ const was=t.alive; const dealt=ctx.pHit(self,t,15); if(was && !t.alive){ self.pAtk+=3; ctx.log('메루루 물공 +3단계'); } }}
   },
   Mimi:{ key:'Mimi', ko:'미미', cost:1, target:'enemy', type:'phys',
-    desc:'토토리 없으면 4 물리×2, 있으면 4 물리×4 및 대상 1턴 취약',
+    desc:'토토리 없으면 4 물리×2, 있으면 3 물리×5 및 대상 1턴 취약',
     use:(ctx,self,t)=>{ 
       ctx.spend(self,1); 
       if(!ctx.fizzle(self)){ 
         const hasTotori = ctx.partyHas('Totori');
         if (hasTotori) {
-          // 토토리가 있을 경우: 4 물리 x 4, 대상 1턴 취약
-          for(let i=0; i<4; i++) {
-            ctx.pHit(self, t, 4);
+          // 토토리가 있을 경우: 3 물리 x 5, 대상 1턴 취약
+          for(let i=0; i<5; i++) {
+            ctx.pHit(self, t, 3);
           }
           t.status.vuln = Math.max(t.status.vuln, 1); // 대상을 1턴간 취약 상태로 만듭니다.
           ctx.log(`${unitName(t)} 1턴간 취약`); // 로그에 취약 부여를 기록합니다.
@@ -340,16 +340,16 @@ Sterk:{ key:'Sterk', ko:'슈테르크', cost:2, target:'enemy', type:'phys',
     use:(ctx,self)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ self.guard+=8; const pot = ['마공+1단계','물공+1단계','방어+4','체력+3'][R(0,3)]; ctx.addPotion(pot); }}
   },
   Lydie:{ key:'Lydie', ko:'리디', cost:1, target:'enemy', type:'magic',
-    desc:'적 하나 8 마법, 파티에 수르 있으면 대상 강화 전부 제거',
-    use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ ctx.mHit(self,t,8); if(ctx.partyHas('Suelle')) ctx.dispelBuff(t,99); }}
+    desc:'적 하나 9 마법, 파티에 수르 있으면 대상 강화 전부 제거',
+    use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ ctx.mHit(self,t,9); if(ctx.partyHas('Suelle')) ctx.dispelBuff(t,99); }}
   },
   Suelle:{ key:'Suelle', ko:'수르', cost:1, target:'enemy', type:'phys',
-    desc:'적 하나 6 물리×2, 파티에 리디 있으면 6 물리×2 추가',
-    use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ const reps = ctx.partyHas('Lydie')?4:2; for(let i=0;i<reps;i++) ctx.pHit(self,t,6); }}
+    desc:'적 하나 3 물리×2, 파티에 리디 있으면 3 물리×3 추가',
+    use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ const reps = ctx.partyHas('Lydie')?5:2; for(let i=0;i<reps;i++) ctx.pHit(self,t,3); }}
   },
   Sophie:{ key:'Sophie', ko:'소피', cost:1, target:'enemy', type:'magic',
-    desc:'적 하나 10 마법, 1턴 취약',
-    use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ ctx.mHit(self,t,10); t.status.vuln=Math.max(t.status.vuln,1); }}
+    desc:'적 하나 7 마법, 2턴 취약',
+    use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ ctx.mHit(self,t,7); t.status.vuln=Math.max(t.status.vuln,2); }}
   },
   Ryza:{ key:'Ryza', ko:'라이자', cost:2, target:'enemy', type:'phys',
     desc:'자신 물공 +2단계, 적 하나 5 물리',
@@ -359,13 +359,13 @@ Sterk:{ key:'Sterk', ko:'슈테르크', cost:2, target:'enemy', type:'phys',
     desc:'선택: 적 하나 15 마법 또는 자신 방어 +15',
     use:(ctx,self)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){
       const pick = confirm('적 하나에 15 마법을 사용할까? 취소를 누르면 자신 방어 +15');
-      if(pick){ ctx.state.pendingTarget={kind:'enemy',caster:self, fn:(t)=>ctx.mHit(self,t,15)}; ctx.tip('대상을 클릭해줘'); }
-      else{ self.guard+=15; }
+      if(pick){ ctx.state.pendingTarget={kind:'enemy',caster:self, fn:(t)=>ctx.mHit(self,t,20)}; ctx.tip('대상을 클릭해줘'); }
+      else{ self.guard+=20; }
     }}
   },
   RoronaAdult:{ key:'RoronaAdult', ko:'어른 로로나', cost:2, target:'none', type:'magic',
-    desc:'적 전체 8 마법, 자신 방어 +12',
-    use:(ctx,self)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.mAoE(self,8); self.guard+=12; }}
+    desc:'적 전체 10 마법, 자신 방어 +12',
+    use:(ctx,self)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.mAoE(self,10); self.guard+=12; }}
   },
   Aurel:{ key:'Aurel', ko:'오렐', cost:3, target:'enemy', type:'phys',
     desc:'적 하나 1 물리×10',
