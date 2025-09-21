@@ -822,7 +822,7 @@ function enemyDebuff(e){
   const kind = ['vuln','fatigue','poison5','paral'][R(0,3)];
   if(kind==='vuln') t.status.vuln=Math.max(t.status.vuln,2);
   if(kind==='fatigue') t.status.fatigue=Math.max(t.status.fatigue,2);
-  if(kind==='poison5') t.status.poison5=Math.max(t.status.poison5,3);
+  if(kind==='poison5') t.status.poison5=Math.max(t.status.poison5,5);
   if(kind==='paral') t.status.paral=Math.max(t.status.paral,2);
   Engine.log(`${unitName(e)} → ${t.ko} ${
     kind==='vuln'?'취약':kind==='fatigue'?'지침':kind==='poison5'?'독':'마비'} 부여`);
