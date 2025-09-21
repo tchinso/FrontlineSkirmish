@@ -176,8 +176,8 @@ const roster = {
     use:(ctx,self)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.mAoE(self,7); ctx.allies().forEach(a=>a.mAtk++); ctx.state.tempLogs.push('아군 마공 +1'); }}
   },
   AniseHyssop:{ key:'AniseHyssop', ko:'아니스히솝', cost:1, target:'enemy', type:'magic',
-    desc:'적 하나 7 마법 피해, 적 강화 1개 제거',
-    use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ ctx.mHit(self,t,7); ctx.dispelBuff(t,1); }}
+  desc:'적 하나 7 마법 피해, 적 강화 전부 제거',
+  use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ ctx.mHit(self,t,7); ctx.dispelBuff(t,99); }}
   },
   Cresson:{ key:'Cresson', ko:'크레송', cost:2, target:'enemy', type:'phys',
     desc:'적 하나 4 물리 피해, 자신 방어 +25, 다음 적 턴 자신 도발',
@@ -497,10 +497,17 @@ const Engine={
   mAoE(attacker, base){ this.enemies.forEach(e=>{ if(e.alive) this.mHit(attacker,e,base); }); },
   pAoE(attacker, base){ this.enemies.forEach(e=>{ if(e.alive) this.pHit(attacker,e,base); }); },
   dispelBuff(target, n){
-    let removed=0;
-    const order=['physImm','magImm','regen'];
-    for(const k of order){ if(target.status[k]>0){ target.status[k]=0; removed++; if(removed>=n) break; } }
-    if(removed>0) this.log(`${unitName(target)} 강화 ${removed}개 제거`);
+  let removed=0;
+  const order=['physImm','magImm','regen'];
+  for(const k of order){
+    if(target.status[k]>0){
+      target.status[k]=0;
+      if(k==='regen'){ target.status.regenTurns=0; } // ← 재생 턴까지 같이 제거
+      removed++;
+      if(removed>=n) break;
+    }
+  }
+  if(removed>0) this.log(`${unitName(target)} 강화 ${removed}개 제거`);
   },
   stealBuff(from, to){
     const list=['physImm','magImm','weaken','regen'];
