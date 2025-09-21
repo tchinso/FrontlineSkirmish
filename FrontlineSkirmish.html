@@ -451,8 +451,8 @@ const Engine={
     state.energy-=cost; updateEnergy();
   },
   fizzle(self){
-    // paralysis: 30% to fizzle
-    if(self.status.paral>0){ if(Math.random()<0.3){ this.log(`${self.ko} 마비로 행동 실패`); return true; } }
+    // paralysis: 40% to fizzle
+    if(self.status.paral>0){ if(Math.random()<0.4){ this.log(`${self.ko} 마비로 행동 실패`); return true; } }
     return false;
   },
   damageCalc(attacker, target, base, kind){
