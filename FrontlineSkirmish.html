@@ -279,15 +279,15 @@ const roster = {
     use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ const was=t.alive; const dealt=ctx.pHit(self,t,15); if(was && !t.alive){ self.pAtk+=3; ctx.log('메루루 물공 +3단계'); } }}
   },
   Mimi:{ key:'Mimi', ko:'미미', cost:1, target:'enemy', type:'phys',
-    desc:'토토리 없으면 4 물리×2, 있으면 5 물리×4 및 대상 1턴 취약',
+    desc:'토토리 없으면 4 물리×2, 있으면 4 물리×4 및 대상 1턴 취약',
     use:(ctx,self,t)=>{ 
       ctx.spend(self,1); 
       if(!ctx.fizzle(self)){ 
         const hasTotori = ctx.partyHas('Totori');
         if (hasTotori) {
-          // 토토리가 있을 경우: 5 물리 x 4, 대상 1턴 취약
+          // 토토리가 있을 경우: 4 물리 x 4, 대상 1턴 취약
           for(let i=0; i<4; i++) {
-            ctx.pHit(self, t, 5);
+            ctx.pHit(self, t, 4);
           }
           t.status.vuln = Math.max(t.status.vuln, 1); // 대상을 1턴간 취약 상태로 만듭니다.
           ctx.log(`${unitName(t)} 1턴간 취약`); // 로그에 취약 부여를 기록합니다.
