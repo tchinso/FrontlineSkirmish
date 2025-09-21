@@ -231,8 +231,8 @@ const roster = {
     }}
   },
   Radiata:{ key:'Radiata', ko:'라지아타', cost:1, target:'none', type:'support',
-    desc:'아군 전원 5턴간 매턴 HP +4',
-    use:(ctx,self)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ ctx.teamBuff.regenTurns=Math.max(ctx.teamBuff.regenTurns,5); ctx.teamBuff.regenAmount=4; }}
+    desc:'아군 전원 5턴간 매턴 HP +5',
+    use:(ctx,self)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ ctx.teamBuff.regenTurns=Math.max(ctx.teamBuff.regenTurns,5); ctx.teamBuff.regenAmount=5; }}
   },
   Lycoris:{ key:'Lycoris', ko:'리코리스', cost:1, target:'none', type:'magic',
     desc:'모든 적에게 5턴 독(턴마다 1 고정 피해) · 중첩됨',
