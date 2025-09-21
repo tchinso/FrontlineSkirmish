@@ -359,8 +359,8 @@ Sterk:{ key:'Sterk', ko:'슈테르크', cost:2, target:'enemy', type:'phys',
     desc:'선택: 적 하나 15 마법 또는 자신 방어 +15',
     use:(ctx,self)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){
       const pick = confirm('적 하나에 15 마법을 사용할까? 취소를 누르면 자신 방어 +15');
-      if(pick){ ctx.state.pendingTarget={kind:'enemy',caster:self, fn:(t)=>ctx.mHit(self,t,20)}; ctx.tip('대상을 클릭해줘'); }
-      else{ self.guard+=20; }
+      if(pick){ ctx.state.pendingTarget={kind:'enemy',caster:self, fn:(t)=>ctx.mHit(self,t,15)}; ctx.tip('대상을 클릭해줘'); }
+      else{ self.guard+=15; }
     }}
   },
   RoronaAdult:{ key:'RoronaAdult', ko:'어른 로로나', cost:2, target:'none', type:'magic',
