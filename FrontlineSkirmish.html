@@ -421,11 +421,11 @@ function newEnemy(pattern){
 
 function enemiesByPattern(){
   const patterns=[
-    {count:1, hp:R(220,280), dmin:16,dmax:22},
-    {count:2, hp:R(120,150), dmin:13,dmax:19},
-    {count:3, hp:R(80,100), dmin:11,dmax:16},
-    {count:4, hp:R(60,80),  dmin:9,dmax:13},
-    {count:5, hp:R(50,60),   dmin:8, dmax:11},
+    {count:1, hp:R(211,321), dmin:16,dmax:22},
+    {count:2, hp:R(151,241), dmin:13,dmax:19},
+    {count:3, hp:R(121,181), dmin:11,dmax:16},
+    {count:4, hp:R(91,121),  dmin:9,dmax:13},
+    {count:5, hp:R(76,81),   dmin:8, dmax:11},
   ];
   const pick=patterns[R(0,patterns.length-1)];
   const arr=[]; for(let i=0;i<pick.count;i++) arr.push(newEnemy(pick));
@@ -810,7 +810,7 @@ function enemyAttack(e){
     return;
   }
   let dmg = e.baseDmg;
-  if(e.status.weaken>0) dmg=Math.floor(dmg*0.8);
+  if(e.status.weaken>0) dmg=Math.floor(dmg*0.7);
   // player's vuln on ally doubles damage
   if(target.status.vuln>0) dmg = Math.floor(dmg * 1.5); 
   const takenFromHp = Engine.applyDamage(target,dmg);
