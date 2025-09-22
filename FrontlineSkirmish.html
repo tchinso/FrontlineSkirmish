@@ -1,4 +1,6 @@
-<!doctype html>
+        <div class="panel">
+          <div class="row" style="justify-content:space-between;margin-bottom:8px">
+            <div>턴<!doctype html>
 <html lang="ko">
 <head>
   <meta charset="utf-8" />
@@ -96,9 +98,7 @@
     <!-- Battle View -->
     <section id="viewBattle" class="view">
       <div class="two-col">
-        <div class="panel">
-          <div class="row" style="justify-content:space-between;margin-bottom:8px">
-            <div>턴: <span id="turnNum">1</span> · 에너지 <span class="energy" id="energyVal">5</span></div>
+: <span id="turnNum">1</span> · 에너지 <span class="energy" id="energyVal">5</span></div>
             <div class="sticky-controls">
               <button id="btnSwap" title="이번 턴 2회 전열↔후열 교체">전열/후열 교체</button>
               <button id="btnEnd">턴 종료</button>
@@ -327,13 +327,40 @@ Sterk:{ key:'Sterk', ko:'슈테르크', cost:2, target:'enemy', type:'phys',
     desc:'(3코)모든 적 8 마법, 1턴 기절(행동 70% 실패)',
     use:(ctx,self)=>{ ctx.spend(self,3); if(!ctx.fizzle(self)){ ctx.mAoE(self,8); ctx.enemies.forEach(e=>e.status.stun=1); }}
   },
-  Escha:{ key:'Escha', ko:'에스카', cost:1, target:'ally', type:'support',
-    desc:'(1코)아군 하나 HP +10, 다음 공격 2배 증폭',
-    use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ t.hp=Math.min(t.maxHp,t.hp+10); t.status.nextAmp=1; }}
+    Escha:{ key:'Escha', ko:'에스카', cost:1, target:'ally', type:'support',
+    desc:'(1코)아군 하나 HP +10, 다음 공격 2배 증폭. 대상이 로지면 추가로 방어력 +10.',
+    use:(ctx,self,t)=>{ 
+      ctx.spend(self,1); 
+      if(!ctx.fizzle(self)){ 
+        t.hp=Math.min(t.maxHp,t.hp+10); 
+        t.status.nextAmp=1;
+        // --- 수정된 부분 시작 ---
+        if (t.key === 'Logy') {
+          t.guard += 10;
+          ctx.log(`에스카가 로지에게 방어력 +10을 추가로 부여했다!`);
+        }
+        // --- 수정된 부분 끝 ---
+      }
+    }
   },
   Logy:{ key:'Logy', ko:'로지', cost:2, target:'enemy', type:'phys',
-    desc:'(2코)적 하나 14 물리, 자신의 다음 턴 첫 공격 비용 0',
-    use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.pHit(self,t,14); self.status.nextTurnFree=1; }}
+    desc:'(2코)적 하나 14 물리, 자신의 다음 턴 첫 공격 비용 0. 파티에 에스카가 있으면 에스카에게 방어력 +3.',
+    use:(ctx,self,t)=>{ 
+      ctx.spend(self,2); 
+      if(!ctx.fizzle(self)){ 
+        ctx.pHit(self,t,14); 
+        self.status.nextTurnFree=1;
+        // --- 수정된 부분 시작 ---
+        if (ctx.partyHas('Escha')) {
+          const eschaUnit = ctx.allies().find(ally => ally.key === 'Escha');
+          if (eschaUnit) {
+            eschaUnit.guard += 3;
+            ctx.log(`로지가 에스카의 방어력을 +3 올려줬다!`);
+          }
+        }
+        // --- 수정된 부분 끝 ---
+      }
+    }
   },
   Nelke:{ key:'Nelke', ko:'네르케', cost:1, target:'self', type:'support',
     desc:'(1코)자신 방어 +8, 무작위 물약(0코스트) 1개 소환',
