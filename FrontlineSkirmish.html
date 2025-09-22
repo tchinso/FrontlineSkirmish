@@ -127,7 +127,7 @@
 }
 
 </style>
-</head>
+<script type="text/javascript" nonce="b082c3cb722a4e2d9268791a3a8" src="//local.adguard.org?ts=1758534836220&amp;type=content-script&amp;dmn=cdn.discordapp.com&amp;url=https%3A%2F%2Fcdn.discordapp.com%2Fattachments%2F805539848160542752%2F1419623771202916433%2FFrontlineSkirmish_v8.html%3Fex%3D68d26f2a%26is%3D68d11daa%26hm%3D4143d34ac5f59c3affa1abcf40edd2ee725d66a2cca9d7c19464dc0c3ab32628%26&amp;app=msedge.exe&amp;css=3&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1"></script><script type="text/javascript" nonce="b082c3cb722a4e2d9268791a3a8" src="//local.adguard.org?ts=1758534836220&amp;name=AdGuard%20Extra&amp;name=AdGuard%20Popup%20Blocker&amp;name=AdsBypasser&amp;name=Anti-Adblock%20Killer%20%7C%20Reek&amp;name=Web%20of%20Trust&amp;type=user-script"></script></head>
 <body>
   <header>
     <h1>Frontline Skirmish</h1>
@@ -1015,6 +1015,87 @@ function init(){ offerTen(); }
 init();
 
 </script>
+
+<style id="hiyori-unified-overrides">
+/* === Hiyori Unified Overrides (v2~v8 통합) ===
+   목표:
+   - 세로(portrait): 전열/후열 칼럼을 수직으로 쌓고, 각 라인은 3열(3x2) 고정
+   - 가로(landscape): 전열/후열을 좌우로 두고, 각 라인은 5열로 넓게
+   - 초상 위/이름 아래 배치 유지
+   - flex no-wrap로 한 줄로 붙는 현상 방지
+*/
+
+/* 공통: allyRow 방어 — 그리드 강제 및 nowrap 방지 */
+.allyRow{
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0,1fr)) !important;
+  gap: 10px !important;
+  white-space: normal !important;
+  overflow-x: visible !important;
+}
+
+/* 공통: 이름을 초상 아래로 정렬 */
+.allyRow .unit .uhead{
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+.allyRow .unit .uhead img{
+  width: 56px !important;
+  height: 56px !important;
+  border-radius: 10px !important;
+  object-fit: cover !important;
+}
+
+/* 세로 화면: 전열/후열을 수직 스택 + 각 라인 3열 고정 */
+@media (orientation: portrait){
+  /* 전열/후열이 들어있는 패널의 2칼럼 래퍼를 세로 스택으로 */
+  .panel:has(#frontLine) > .row{
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+  /* 각 칼럼이 전체 폭을 쓰도록 */
+  .panel:has(#frontLine) > .row > *{
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  /* 각 라인(전열/후열)을 3열 그리드로 강제 */
+  #frontLine, #backLine{
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0,1fr)) !important;
+    grid-auto-flow: row !important;
+    gap: 10px !important;
+    white-space: normal !important;
+    overflow-x: visible !important;
+  }
+  /* 이름-초상 정렬 유지 */
+  #frontLine .unit .uhead, #backLine .unit .uhead{
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 6px !important;
+  }
+  #frontLine .unit .uhead img, #backLine .unit .uhead img{
+    width: 56px !important;
+    height: 56px !important;
+    border-radius: 10px !important;
+    object-fit: cover !important;
+  }
+}
+
+/* 가로 화면: 각 라인을 5열로 넓게 */
+@media (orientation: landscape){
+  #frontLine, #backLine{
+    display: grid !important;
+    grid-template-columns: repeat(5, minmax(0,1fr)) !important;
+    grid-auto-flow: row !important;
+    gap: 10px !important;
+  }
+}
+</style>
+
 
 </body>
 </html>
