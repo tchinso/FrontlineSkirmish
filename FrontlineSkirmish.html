@@ -339,13 +339,13 @@ const roster = {
     use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ const was=t.alive; const dealt=ctx.pHit(self,t,15); if(was && !t.alive){ self.pAtk+=5; ctx.log('메루루 물공 +5단계'); } }}
   },
   Mimi:{ key:'Mimi', ko:'미미', cost:1, target:'enemy', type:'phys',
-    desc:'(1코)토토리 없으면 4 물리×2, 있으면 3 물리×5 및 턴 종료 시까지 취약 부여',
+    desc:'(1코)토토리 없으면 4 물리×2, 있으면 3 물리×4 및 턴 종료 시까지 취약 부여',
     use:(ctx,self,t)=>{ 
       ctx.spend(self,1); 
       if(!ctx.fizzle(self)){ 
         const hasTotori = ctx.partyHas('Totori');
         if (hasTotori) {
-          // 토토리가 있을 경우: 3 물리 x 5, 대상 턴 종료 시까지 취약 부여
+          // 토토리가 있을 경우: 3 물리 x 4, 대상 턴 종료 시까지 취약 부여
           for(let i=0; i<5; i++) {
             ctx.pHit(self, t, 3);
           }
@@ -431,8 +431,25 @@ Sterk:{ key:'Sterk', ko:'슈테르크', cost:2, target:'enemy', type:'phys',
     use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ ctx.mHit(self,t,9); if(ctx.partyHas('Suelle')) ctx.dispelBuff(t,99); }}
   },
   Suelle:{ key:'Suelle', ko:'수르', cost:1, target:'enemy', type:'phys',
-    desc:'(1코)적 하나 3 물리×2, 파티에 리디 있으면 3 물리×3 추가',
-    use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ const reps = ctx.partyHas('Lydie')?5:2; for(let i=0;i<reps;i++) ctx.pHit(self,t,3); }}
+    desc:'(1코)적 하나 4 물리×2, 파티에 리디 있으면 3 물리×4 및 대상 1턴 기절',
+    use:(ctx,self,t)=>{
+      ctx.spend(self,1);
+      if(!ctx.fizzle(self)){
+        if (ctx.partyHas('Lydie')) {
+          // 시너지 있을 때: 3 물리 x 4, 대상 1턴 기절
+          for(let i=0; i<4; i++) {
+            ctx.pHit(self, t, 3);
+          }
+          t.status.stun = 1; // 대상에게 1턴 기절 부여
+          ctx.log(`${unitName(t)} 1턴간 기절`);
+        } else {
+          // 시너지 없을 때: 4 물리 x 2
+          for(let i=0; i<2; i++) {
+            ctx.pHit(self, t, 4);
+          }
+        }
+      }
+    }
   },
   Sophie:{ key:'Sophie', ko:'소피', cost:1, target:'enemy', type:'magic',
     desc:'(1코)적 하나 7 마법, 2턴 취약',
