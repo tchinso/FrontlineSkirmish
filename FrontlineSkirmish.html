@@ -345,11 +345,11 @@ const roster = {
       if(!ctx.fizzle(self)){ 
         const hasTotori = ctx.partyHas('Totori');
         if (hasTotori) {
-          // 토토리가 있을 경우: 3 물리 x 5, 대상 턴 종료 시까지 취약 부여여
+          // 토토리가 있을 경우: 3 물리 x 5, 대상 턴 종료 시까지 취약 부여
           for(let i=0; i<5; i++) {
             ctx.pHit(self, t, 3);
           }
-          t.status.vuln = Math.max(t.status.vuln, 1); // 대상을 턴 종료 시까지지 취약 상태로 만듭니다.
+          t.status.vuln = Math.max(t.status.vuln, 1); // 대상을 턴 종료 시까지 취약 상태로 만듭니다.
           ctx.log(`${unitName(t)} 1턴간 취약 부여`); // 로그에 취약 부여를 기록합니다.
         } else {
           // 토토리가 없을 경우: 4 물리 x 2
