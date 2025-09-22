@@ -346,7 +346,7 @@ const roster = {
         const hasTotori = ctx.partyHas('Totori');
         if (hasTotori) {
           // 토토리가 있을 경우: 3 물리 x 4, 대상 턴 종료 시까지 취약 부여
-          for(let i=0; i<5; i++) {
+          for(let i=0; i<4; i++) {
             ctx.pHit(self, t, 3);
           }
           t.status.vuln = Math.max(t.status.vuln, 1); // 대상을 턴 종료 시까지 취약 상태로 만듭니다.
@@ -440,7 +440,7 @@ Sterk:{ key:'Sterk', ko:'슈테르크', cost:2, target:'enemy', type:'phys',
           for(let i=0; i<4; i++) {
             ctx.pHit(self, t, 3);
           }
-          t.status.stun = 1; // 대상에게 1턴 기절 부여
+          t.status.stun = 2; // 대상에게 1턴 기절 부여
           ctx.log(`${unitName(t)} 1턴간 기절`);
         } else {
           // 시너지 없을 때: 4 물리 x 2
