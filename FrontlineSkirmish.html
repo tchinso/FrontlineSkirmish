@@ -331,8 +331,8 @@ const roster = {
     use:(ctx,self)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.mAoE(self,40); ctx.vanish(self); }}
   },
   Totori:{ key:'Totori', ko:'토토리', cost:1, target:'none', type:'magic',
-    desc:'(1코)모든 적 14 마법, 처치 시 소멸하지 않음',
-    use:(ctx,self)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ const before=ctx.enemies.filter(e=>e.alive).length; ctx.mAoE(self,14); const after=ctx.enemies.filter(e=>e.alive).length; if(after===before){ ctx.vanish(self);} }}
+    desc:'(1코)모든 적 10 마법, 처치 시 소멸하지 않음',
+    use:(ctx,self)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ const before=ctx.enemies.filter(e=>e.alive).length; ctx.mAoE(self,10); const after=ctx.enemies.filter(e=>e.alive).length; if(after===before){ ctx.vanish(self);} }}
   },
   Meruru:{ key:'Meruru', ko:'메루루', cost:2, target:'enemy', type:'phys',
     desc:'(2코)적 하나 15 물리, 처치 시 자신 물공 +5단계',
