@@ -248,12 +248,14 @@ const roster = {
     use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ for(let i=0;i<3;i++) ctx.pHit(self,t,4); }}
   },
   Varerian:{ key:'Varerian', ko:'발레리안', cost:2, target:'enemy', type:'phys',
-    desc:'(2코)적 하나 14 물리, 준 피해만큼 흡혈. 대상에게 재생이 있으면 훔쳐온다.',
+    desc:'(2코)적 하나 14 물리, 준 피해량의 절반만큼 자신에게 방어 부여. 대상에게 재생이 있으면 훔쳐온다.',
     use:(ctx,self,t)=>{ 
       ctx.spend(self,2); 
       if(!ctx.fizzle(self)){ 
         const dealt=ctx.pHit(self,t,14); 
-        self.hp = Math.min(self.maxHp, self.hp+dealt);
+        const guardGain = Math.floor(dealt / 2);
+        self.guard += guardGain;
+        if (guardGain > 0) ctx.log(`${self.ko} 방어 +${guardGain}`);
         // --- 재생 훔치기 로직 시작 ---
         if (t.status && t.status.regenTurns > 0) {
           self.status.regenTurns = t.status.regenTurns;
@@ -860,7 +862,7 @@ function endPlayerTurn(){
       e.lycoPoison = e.lycoPoison.filter(x=>x>0); e.hp=Math.max(0,e.hp-total); if(e.hp<=0){ e.alive=false; e.guard=0; Engine.log(`${unitName(e)} 독으로 쓰러짐`);} }
 
     // enemy regen
-    if(e.status.regenTurns>0){ e.hp=Math.min(e.maxHp, e.hp+20); e.status.regenTurns--; }
+    if(e.status.regenTurns>0){ e.hp=Math.min(e.maxHp, e.hp+12); e.status.regenTurns--; }
 
     // decrement enemy status
     if(e.status.vuln>0) e.status.vuln--; if(e.status.weaken>0) e.status.weaken--; if(e.status.physImm>0) e.status.physImm--; if(e.status.magImm>0) e.status.magImm--; if(e.status.stun>0) e.status.stun--;
@@ -960,7 +962,7 @@ function enemyBuff(e){
   if(kind==='magImm') e.status.magImm=2;
   if(kind==='defUp') e.guard+=20;
   if(kind==='dmgUp') e.baseDmg=Math.floor(e.baseDmg*1.4);
-  if(kind==='regen'){ e.status.regenTurns=3; e.status.regen=1; }
+  if(kind==='regen'){ e.status.regenTurns=5; e.status.regen=1; }
   Engine.log(`${unitName(e)} 버프: ${kind}`);
 }
 
