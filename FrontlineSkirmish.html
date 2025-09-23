@@ -429,7 +429,7 @@ Sterk:{ key:'Sterk', ko:'슈테르크', cost:2, target:'enemy', type:'phys',
   },
   Nelke:{ key:'Nelke', ko:'네르케', cost:1, target:'self', type:'support',
     desc:'(1코)자신 방어 +8, 무작위 물약(0코스트) 1개 소환',
-    use:(ctx,self)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ self.guard+=8; const pot = ['마공+2단계','물공+1단계','방어+4','체력+7'][R(0,3)]; ctx.addPotion(pot); }}
+    use:(ctx,self)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ self.guard+=8; const pot = ['마공+1단계','물공+1단계','방어+4','체력+7'][R(0,3)]; ctx.addPotion(pot); }}
   },
   Lydie:{ key:'Lydie', ko:'리디', cost:1, target:'enemy', type:'magic',
     desc:'(1코)적 하나 9 마법, 파티에 수르 있으면 대상 강화 전부 제거',
@@ -625,7 +625,7 @@ const Engine={
   vanish(self){ self.alive=false; self.hp=0; self.guard=0; this.log(`${self.ko} 소멸`); refresh(); },
   addPotion(kind){ state.potions = state.potions||[]; state.potions.push(kind); renderActions(); this.log(`물약 생성: ${kind}`); },
   usePotion(idx, target){ const kind=state.potions[idx]; state.potions.splice(idx,1);
-    if(kind==='마공+2단계') target.mAtk+=2;
+    if(kind==='마공+1단계') target.mAtk+=1;
     if(kind==='물공+1단계') target.pAtk++;
     if(kind==='방어+4') target.guard+=4;
     if(kind==='체력+7') target.hp=Math.min(target.maxHp,target.hp+7);
