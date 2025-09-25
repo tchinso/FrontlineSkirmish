@@ -313,7 +313,7 @@ const roster = {
     use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ self.hp=Math.max(1,self.hp-3); ctx.mHit(self,t,14); }}
   },
   Phonic:{ key:'Phonic', ko:'포닉', cost:2, target:'none', type:'phys',
-    desc:'(2코)모든 적 2 물리, 3턴 취약+공격력감소',
+    desc:'(2코)모든 적 2 물리, 3턴 취약+2턴 공격력감소',
     use:(ctx,self)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.pAoE(self,2); ctx.enemies.forEach(e=>{ e.status.vuln=Math.max(e.status.vuln,3); e.status.weaken=Math.max(e.status.weaken,3);} ); }}
   },
   Verbena:{ key:'Verbena', ko:'벨베이느', cost:2, target:'none', type:'support',
@@ -459,8 +459,8 @@ Sterk:{ key:'Sterk', ko:'슈테르크', cost:2, target:'enemy', type:'phys',
     }
   },
   Sophie:{ key:'Sophie', ko:'소피', cost:1, target:'enemy', type:'magic',
-    desc:'(1코)적 하나 7 마법, 2턴 취약',
-    use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ ctx.mHit(self,t,7); t.status.vuln=Math.max(t.status.vuln,2); }}
+    desc:'(1코)적 하나 7 마법, 3턴 취약',
+    use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ ctx.mHit(self,t,7); t.status.vuln=Math.max(t.status.vuln,3); }}
   },
   Ryza:{ key:'Ryza', ko:'라이자', cost:2, target:'enemy', type:'phys',
     desc:'(2코)자신 물공 +1단계, 적 하나 9 물리',
@@ -490,8 +490,25 @@ Sterk:{ key:'Sterk', ko:'슈테르크', cost:2, target:'enemy', type:'phys',
       ctx.log('나츠메: 이번 적 턴 아군 회피 70%, 다음 턴부터 3턴 에너지 +1');
     }}
   },
-};
 
+  Ru:{ key:'Ru', ko:'루', cost:2, target:'enemy', type:'magic',
+    desc:'(2코)적 하나 15 마법, 파티에 소렐이 있으면 소렐 방어 +7 및 취약 해제',
+    use:(ctx,self,t)=>{ 
+      ctx.spend(self,2); 
+      if(!ctx.fizzle(self)){ 
+        ctx.mHit(self,t,15); 
+        if (ctx.partyHas('Sorel')) { 
+          const sor = ctx.allies().find(a=>a.key==='Sorel'); 
+          if (sor) { 
+            sor.guard += 7; 
+            sor.status.vuln = 0; 
+            ctx.log('루: 소렐 방어 +7, 취약 해제'); 
+          } 
+        } 
+      } 
+    }
+  },
+};
 const ROSTER_KEYS = Object.keys(roster);
 
 /* =====================
