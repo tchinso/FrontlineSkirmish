@@ -329,12 +329,12 @@ const roster = {
     use:(ctx,self,t)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.mHit(self,t,12); ctx.allies().forEach(a=>a.hp=Math.min(a.maxHp,a.hp+7)); }}
   },
   Marie:{ key:'Marie', ko:'마리', cost:2, target:'none', type:'magic',
-    desc:'(2코)모든 적 40 마법, 사용 후 자신 소멸',
-    use:(ctx,self)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.mAoE(self,40); ctx.vanish(self); }}
+    desc:'(2코)모든 적 44 마법, 사용 후 자신 소멸',
+    use:(ctx,self)=>{ ctx.spend(self,2); if(!ctx.fizzle(self)){ ctx.mAoE(self,44); ctx.vanish(self); }}
   },
   Totori:{ key:'Totori', ko:'토토리', cost:1, target:'none', type:'magic',
-    desc:'(1코)모든 적 10 마법, 처치 시 소멸하지 않음',
-    use:(ctx,self)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ const before=ctx.enemies.filter(e=>e.alive).length; ctx.mAoE(self,12); const after=ctx.enemies.filter(e=>e.alive).length; if(after===before){ ctx.vanish(self);} }}
+    desc:'(1코)모든 적 14 마법, 처치 시 소멸하지 않음',
+    use:(ctx,self)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ const before=ctx.enemies.filter(e=>e.alive).length; ctx.mAoE(self,14); const after=ctx.enemies.filter(e=>e.alive).length; if(after===before){ ctx.vanish(self);} }}
   },
   Meruru:{ key:'Meruru', ko:'메루루', cost:2, target:'enemy', type:'phys',
     desc:'(2코)적 하나 15 물리, 처치 시 자신 물공 +5단계',
@@ -482,12 +482,13 @@ Sterk:{ key:'Sterk', ko:'슈테르크', cost:2, target:'enemy', type:'phys',
     desc:'(3코)적 하나 1 물리×7',
     use:(ctx,self,t)=>{ ctx.spend(self,3); if(!ctx.fizzle(self)){ for(let i=0;i<7;i++) ctx.pHit(self,t,1); }}
   },
-  Natsume:{ key:'Natsume', ko:'나츠메', cost:3, target:'none', type:'support',
-    desc:'(3코)아군 전원: 이번 적 턴 받는 공격 70% 회피, 다음 턴부터 3턴간 에너지 +1',
+    Natsume:{ key:'Natsume', ko:'나츠메', cost:3, target:'none', type:'mixed',
+    desc:'(3코)적 전원에게 7의 마법피해를 입히고, 아군 전원: 이번 적 턴 받는 공격 70% 회피, 다음 턴부터 3턴간 에너지 +1',
     use:(ctx,self)=>{ ctx.spend(self,3); if(!ctx.fizzle(self)){
+      ctx.mAoE(self, 7); // <-- [추가] 모든 적에게 7의 마법 피해를 주는 로직
       ctx.teamBuff.evadeTurn = ctx.state.turn; ctx.teamBuff.evadeChance = 0.7;
       ctx.teamBuff.energyRegenPlusPending = Math.max(ctx.teamBuff.energyRegenPlusPending, 3);
-      ctx.log('나츠메: 이번 적 턴 아군 회피 70%, 다음 턴부터 3턴 에너지 +1');
+      ctx.log('나츠메: 적 전체 7 마법 피해, 이번 적 턴 아군 회피 70%, 다음 턴부터 3턴 에너지 +1'); // <-- [수정] 로그 메시지 업데이트
     }}
   },
 
