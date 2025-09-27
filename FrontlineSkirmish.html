@@ -309,8 +309,8 @@ const roster = {
     use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ t.hp=Math.min(t.maxHp,t.hp+15); t.status.vuln=0; t.status.fatigue=0; t.status.poison5=0; t.status.paral=0; }}
   },
   Auseil:{ key:'Auseil', ko:'오제유', cost:1, target:'enemy', type:'magic',
-    desc:'(1코)자신 HP -3, 적 하나 14 마법',
-    use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ self.hp=Math.max(1,self.hp-3); ctx.mHit(self,t,14); }}
+    desc:'(1코)자신 HP -2, 적 하나 14 마법',
+    use:(ctx,self,t)=>{ ctx.spend(self,1); if(!ctx.fizzle(self)){ self.hp=Math.max(1,self.hp-2); ctx.mHit(self,t,14); }}
   },
   Phonic:{ key:'Phonic', ko:'포닉', cost:2, target:'none', type:'phys',
     desc:'(2코)모든 적 2 물리, 3턴 취약+2턴 공격력감소',
